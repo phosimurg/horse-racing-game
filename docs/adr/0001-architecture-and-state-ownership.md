@@ -9,6 +9,7 @@
 The brief asks for a Vue application structured "as if for a large-scale project", with Vuex or Pinia and a component-based design, and it evaluates component structure, code organization and state management.
 
 The game combines three things:
+
 - Pure rules: random horses, schedules and a race simulation.
 - A lifecycle with pause and resume.
 - Animation at display refresh rate.

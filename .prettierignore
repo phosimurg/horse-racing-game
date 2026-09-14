@@ -1,0 +1,9 @@
+dist
+coverage
+playwright-report
+test-results
+reports
+.stryker-tmp
+package-lock.json
+docs/implementation-plan.md
+e2e/**/*-snapshots

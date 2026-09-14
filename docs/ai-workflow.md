@@ -85,9 +85,55 @@ This project is built with an AI coding agent (Claude Code) under the author's d
 
 Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation tests on the domain only, bundle the font for screenshots, and add a spec glossary with explicit empty, intermission and control states.
 
+## Phase 1: Walking skeleton (2026-09-14)
+
+### Where the agent was wrong or incomplete, and how it was caught
+
+1. **The research summary got the scaffold's versions wrong.**
+   - Issue: the tooling research reported versions that differ from the real create-vue 3.23.0 output, for example jsdom 30 instead of 29.1.1.
+   - Caught by: reading the generated `package.json`.
+   - Resolution: versions now come only from the npm registry and the generated files.
+2. **npm crashed while installing.**
+   - Issue: `npm install` crashed inside npm's resolver with `Cannot read properties of null (reading 'edgesOut')`.
+   - Caught by: the npm debug log, a scratch reproduction with only Vitest 4.1.11, and the open issue npm/cli#9787.
+   - Resolution: the lockfile is generated with npm 11, and a clean `npm ci` was verified with npm 10. The rule is in `AGENTS.md` and ADR 0003.
+3. **The declared Node range did not match the dependencies.**
+   - Issue: the scaffold declares Node `^22.18.0`, but its own npm-run-all2 9 and the `nopt` and `abbrev` packages pulled in by Vue Test Utils require `^22.22.2`. With `engine-strict`, installs failed on Node 22.19.
+   - Caught by: an engine check of every package in the lockfile.
+   - Resolution: the author upgraded to Node 22.23.2, and the project declares `^22.22.2 || ^24.15.0 || >=26.0.0`, which brought back the current jsdom, npm-run-all2 and lint-staged releases.
+4. **The first lint run failed on the test tooling.**
+   - Issues: the Playwright lint rule did not treat the axe helper as an assertion, and the console guard used `expect` outside a test and an unbound console method.
+   - Caught by: the lint gates.
+   - Resolution: the helper is registered through `assertFunctionNames`, and the guard now throws with the logged messages.
+5. **Vite warned about an extensionless config import.**
+   - Issue: Vite's native config loader, planned as the default, rejects the extensionless `./vite.config` import.
+   - Caught by: the Vitest output.
+   - Resolution: the import now uses the `.ts` extension.
+6. **The preview tool started a different project.**
+   - Issue: the Browser preview picked a launch configuration from another project in the parent folder.
+   - Caught by: the reported server name and port.
+   - Resolution: that server was stopped at once, and with the author's approval a dedicated entry was added to the parent launch configuration.
+7. **Commit messages lost their headers.**
+   - Issue: the first batch of commits put a shell line continuation after each message heredoc, which swallowed the Conventional Commit header.
+   - Caught by: the commitlint hook rejected all eight messages before any commit was created.
+   - Resolution: the commits were recreated by a script without line continuations.
+8. **The application shell relied on the host background.**
+   - Issue: in the Browser pane the shell showed the host's dark backdrop behind black text, because the page sets no colors of its own.
+   - Caught by: the Browser pane screenshot.
+   - Resolution: the temporary shell stays as it is; the Phase 4a tokens define explicit background and text colors for both themes (design section 8).
+
+### Guardrails proven before relying on them
+
+- `block-sensitive-files.mjs` exits 2 for `.env.local`, `package-lock.json` and a visual baseline, and 0 for `src/App.vue`.
+- `allow-test-files-only.mjs` exits 2 for an implementation file and 0 for spec and end-to-end files.
+- commitlint rejects a non-conventional header and an unknown scope, and accepts a valid message.
+- ESLint reports all seven deliberate layer violations across the domain, stores, common components and UI kit.
+- The commit-msg hook rejected eight malformed messages on its first real use.
+
 ## Task log
 
-| Task | Delegated to the agent | Kept by the author | Agent issue caught | Rule added |
-| --- | --- | --- | --- | --- |
-| HRG-01 | Running the scaffold command | Approval of the scaffold options | None | None |
-| HRG-02 to HRG-07 | Drafting the plan copy, specifications, task breakdown, ADRs and this log from the approved plan | Approval with decisions D1 to D7, which changed the roster, pause and upset rules | None so far | None |
+| Task             | Delegated to the agent                                                                           | Kept by the author                                                                | Agent issue caught   | Rule added                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- | -------------------- | ------------------------------------------- |
+| HRG-01           | Running the scaffold command                                                                     | Approval of the scaffold options                                                  | None                 | None                                        |
+| HRG-02 to HRG-07 | Drafting the plan copy, specifications, task breakdown, ADRs and this log from the approved plan | Approval with decisions D1 to D7, which changed the roster, pause and upset rules | None so far          | None                                        |
+| HRG-10 to HRG-19 | Version and engine research, configuration drafts, crash diagnosis                               | Node upgrade to 22.23.2, local Docker use, GitHub Pages and the preview entry     | Phase 1 items 1 to 8 | Dependency changes use npm 11 (`AGENTS.md`) |

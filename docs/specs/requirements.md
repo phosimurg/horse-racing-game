@@ -1,11 +1,11 @@
 # Requirements Specification
 
-| Field | Value |
-| --- | --- |
-| Status | Approved with author decisions |
-| Last updated | 2026-09-14 |
-| Source | Insider One "Software Developer Assessment Project" brief |
-| Related | [Design](design.md), [Tasks](tasks.md), [ADRs](../adr/) |
+| Field        | Value                                                     |
+| ------------ | --------------------------------------------------------- |
+| Status       | Approved with author decisions                            |
+| Last updated | 2026-09-14                                                |
+| Source       | Insider One "Software Developer Assessment Project" brief |
+| Related      | [Design](design.md), [Tasks](tasks.md), [ADRs](../adr/)   |
 
 ## 1. Purpose and scope
 
@@ -17,39 +17,39 @@ Out of scope: accounts, persistence of past races, betting, multiplayer and back
 
 ## 2. Glossary
 
-| Term | Meaning |
-| --- | --- |
-| Horse | A racer with an id from 1 to 20, a unique name, a unique silk color and a condition score |
-| Roster | The current list of 20 horses |
-| Condition | Integer from 1 to 100; a higher condition means a higher expected speed |
-| Program | The generated schedule of 6 rounds (the brief's "race schedule") |
-| Race | The whole 6-round program, from Start to the end of round 6 |
-| Round | One run over a fixed distance with 10 horses; labeled "Lap" in the UI, as in the brief's example |
-| Lane | A horse's track position within a round, 1 to 10; shown as "Position" in the Program panel |
-| Placement | A horse's finishing place within a round, 1 to 10; shown as "Position" in the Results panel |
-| Intermission | The short pause between the end of one round and the start of the next |
-| Race control | The single button that reads Start, Pause or Resume |
+| Term         | Meaning                                                                                          |
+| ------------ | ------------------------------------------------------------------------------------------------ |
+| Horse        | A racer with an id from 1 to 20, a unique name, a unique silk color and a condition score        |
+| Roster       | The current list of 20 horses                                                                    |
+| Condition    | Integer from 1 to 100; a higher condition means a higher expected speed                          |
+| Program      | The generated schedule of 6 rounds (the brief's "race schedule")                                 |
+| Race         | The whole 6-round program, from Start to the end of round 6                                      |
+| Round        | One run over a fixed distance with 10 horses; labeled "Lap" in the UI, as in the brief's example |
+| Lane         | A horse's track position within a round, 1 to 10; shown as "Position" in the Program panel       |
+| Placement    | A horse's finishing place within a round, 1 to 10; shown as "Position" in the Results panel      |
+| Intermission | The short pause between the end of one round and the start of the next                           |
+| Race control | The single button that reads Start, Pause or Resume                                              |
 
 ## 3. Brief traceability
 
-| Brief item | Covered by |
-| --- | --- |
-| Requirement 1: Vue | ADR 0001 |
-| Requirement 2: generate horse list | HORSE-01 to HORSE-04 |
-| Requirement 3: generate race schedule | PROG-01 to PROG-04 |
-| Requirement 4: start the race | RACE-01, CTRL-01, CTRL-02 |
-| Requirement 5: display race results | RES-01, RES-02 |
-| Requirement 6: animated horse movement | RACE-02, RACE-03, RACE-05 |
-| Requirement 7: coding style | ADR 0001, [design.md](design.md) |
-| Rule 1: 20 horses | HORSE-01 |
-| Rule 2: unique color | HORSE-02 |
-| Rule 3: condition 1 to 100 | HORSE-03 |
-| Rule 4: 6 rounds | PROG-01 |
-| Rule 5: 10 random horses per round | PROG-03 |
-| Rule 6: round distances | PROG-02 |
-| Technical: Vuex or Pinia | ADR 0001 |
-| Technical: component-based design | [design.md](design.md) |
-| Bonus: unit, E2E and visual tests | ADR 0003 |
+| Brief item                             | Covered by                       |
+| -------------------------------------- | -------------------------------- |
+| Requirement 1: Vue                     | ADR 0001                         |
+| Requirement 2: generate horse list     | HORSE-01 to HORSE-04             |
+| Requirement 3: generate race schedule  | PROG-01 to PROG-04               |
+| Requirement 4: start the race          | RACE-01, CTRL-01, CTRL-02        |
+| Requirement 5: display race results    | RES-01, RES-02                   |
+| Requirement 6: animated horse movement | RACE-02, RACE-03, RACE-05        |
+| Requirement 7: coding style            | ADR 0001, [design.md](design.md) |
+| Rule 1: 20 horses                      | HORSE-01                         |
+| Rule 2: unique color                   | HORSE-02                         |
+| Rule 3: condition 1 to 100             | HORSE-03                         |
+| Rule 4: 6 rounds                       | PROG-01                          |
+| Rule 5: 10 random horses per round     | PROG-03                          |
+| Rule 6: round distances                | PROG-02                          |
+| Technical: Vuex or Pinia               | ADR 0001                         |
+| Technical: component-based design      | [design.md](design.md)           |
+| Bonus: unit, E2E and visual tests      | ADR 0003                         |
 
 ## 4. Functional requirements
 
@@ -104,13 +104,13 @@ Out of scope: accounts, persistence of past races, betting, multiplayer and back
 
 States: `idle` (no program), `ready` (program generated, race not started), `running` (a round or an intermission is in progress), `paused`, `finished`.
 
-| State | Generate Program | Race control | Round completed | Round 6 completed |
-| --- | --- | --- | --- | --- |
-| `idle` | Draw a new roster and program, go to `ready` | Disabled, reads Start (no-op) | Not applicable | Not applicable |
-| `ready` | Draw a new roster and program, clear results, stay `ready` | Reads Start: go to `running`, round 1 starts | Not applicable | Not applicable |
-| `running` | Disabled (no-op) | Reads Pause: go to `paused` | Append result, start intermission, stay `running` | Append result, go to `finished` |
-| `paused` | Disabled (no-op) | Reads Resume: go to `running` from the frozen state | Cannot occur: timers frozen | Cannot occur: timers frozen |
-| `finished` | Draw a new roster and program, clear results, go to `ready` | Disabled, reads Start (no-op) | Not applicable | Not applicable |
+| State      | Generate Program                                            | Race control                                        | Round completed                                   | Round 6 completed               |
+| ---------- | ----------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------- | ------------------------------- |
+| `idle`     | Draw a new roster and program, go to `ready`                | Disabled, reads Start (no-op)                       | Not applicable                                    | Not applicable                  |
+| `ready`    | Draw a new roster and program, clear results, stay `ready`  | Reads Start: go to `running`, round 1 starts        | Not applicable                                    | Not applicable                  |
+| `running`  | Disabled (no-op)                                            | Reads Pause: go to `paused`                         | Append result, start intermission, stay `running` | Append result, go to `finished` |
+| `paused`   | Disabled (no-op)                                            | Reads Resume: go to `running` from the frozen state | Cannot occur: timers frozen                       | Cannot occur: timers frozen     |
+| `finished` | Draw a new roster and program, clear results, go to `ready` | Disabled, reads Start (no-op)                       | Not applicable                                    | Not applicable                  |
 
 Round completion events come from the playback engine, never from the user. Every no-op cell is covered by a unit test (CTRL-02).
 
@@ -133,7 +133,7 @@ The brief leaves these points open; the author decided them on 2026-09-14.
 
 ## 9. Revision history
 
-| Date | Change |
-| --- | --- |
-| 2026-09-14 | Initial draft from the approved implementation plan |
+| Date       | Change                                                                                                                                                                                                                                                                                                                         |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-09-14 | Initial draft from the approved implementation plan                                                                                                                                                                                                                                                                            |
 | 2026-09-14 | Author decisions D1 to D7 replace the open assumptions and recruiter questions. Changes: Generate Program also draws a new roster (was: roster drawn once per page load); Generate Program is disabled while paused (was: discards the race in progress); upsets are limited to closely matched horses (was: realistic upsets) |
