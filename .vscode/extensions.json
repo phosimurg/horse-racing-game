@@ -4,6 +4,7 @@
     "vitest.explorer",
     "ms-playwright.playwright",
     "dbaeumer.vscode-eslint",
+    "stylelint.vscode-stylelint",
     "EditorConfig.EditorConfig",
     "oxc.oxc-vscode",
     "esbenp.prettier-vscode"
