@@ -130,10 +130,32 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
 - ESLint reports all seven deliberate layer violations across the domain, stores, common components and UI kit.
 - The commit-msg hook rejected eight malformed messages on its first real use.
 
+## Phase 2: Domain (2026-09-14)
+
+### Where the agent was wrong or incomplete, and how it was caught
+
+1. **`randomInt` accepted ranges it cannot sample uniformly.**
+   - Issue: the implementing agent kept every safe-integer range after the test-author asked about it, although a draw has only 2^32 possible values.
+   - Caught by: the reviewer agent, which measured no odd results in 100,000 draws over a range of 2^33 integers.
+   - Resolution: design 3.2 rejects ranges of more than 2^32 integers, and tests pin both sides of that boundary.
+2. **Production code could import test helpers.**
+   - Issue: the layer rules did not stop non-spec files from importing `src/test`, and the type-check would not either, so a stubbed generator could ship in the bundle.
+   - Caught by: the reviewer agent, on the first spec that imports a shared helper.
+   - Resolution: a `no-restricted-syntax` rule covers every layer (design 2.1).
+
+### Environment
+
+- `npm run test:e2e` failed in all three browsers because no Playwright browsers are installed on the host. The gate ran in the pinned `mcr.microsoft.com/playwright:v1.63.0-noble` image with the existing `node_modules` volume, the image CI uses, so nothing was downloaded.
+
+### Guardrails proven before relying on them
+
+- The test helper rule rejects an alias import and a relative import in a `.ts` file and an alias import in a `.vue` file, and accepts spec files.
+
 ## Task log
 
-| Task             | Delegated to the agent                                                                           | Kept by the author                                                                | Agent issue caught   | Rule added                                  |
-| ---------------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- | -------------------- | ------------------------------------------- |
-| HRG-01           | Running the scaffold command                                                                     | Approval of the scaffold options                                                  | None                 | None                                        |
-| HRG-02 to HRG-07 | Drafting the plan copy, specifications, task breakdown, ADRs and this log from the approved plan | Approval with decisions D1 to D7, which changed the roster, pause and upset rules | None so far          | None                                        |
-| HRG-10 to HRG-19 | Version and engine research, configuration drafts, crash diagnosis                               | Node upgrade to 22.23.2, local Docker use, GitHub Pages and the preview entry     | Phase 1 items 1 to 8 | Dependency changes use npm 11 (`AGENTS.md`) |
+| Task             | Delegated to the agent                                                                                                          | Kept by the author                                                                                              | Agent issue caught    | Rule added                                           |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------- | ---------------------------------------------------- |
+| HRG-01           | Running the scaffold command                                                                                                    | Approval of the scaffold options                                                                                | None                  | None                                                 |
+| HRG-02 to HRG-07 | Drafting the plan copy, specifications, task breakdown, ADRs and this log from the approved plan                                | Approval with decisions D1 to D7, which changed the roster, pause and upset rules                               | None so far           | None                                                 |
+| HRG-10 to HRG-19 | Version and engine research, configuration drafts, crash diagnosis                                                              | Node upgrade to 22.23.2, local Docker use, GitHub Pages and the preview entry                                   | Phase 1 items 1 to 8  | Dependency changes use npm 11 (`AGENTS.md`)          |
+| HRG-20           | Tests from design sections 3.1, 3.2 and 4.4 (test-author), mulberry32 reference values derived two ways, implementation, review | Phase 2 exit criteria and the Stryker installation; the design additions await review in the phase pull request | Phase 2 items 1 and 2 | Test helpers stay in spec files (`eslint.config.ts`) |

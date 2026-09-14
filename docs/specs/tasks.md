@@ -40,7 +40,7 @@ Branch `feat/domain`. Tests are written before implementation.
 
 | ID     | Task                                                   | Requirements                      | Tests                                                                   | Status |
 | ------ | ------------------------------------------------------ | --------------------------------- | ----------------------------------------------------------------------- | ------ |
-| HRG-20 | Seeded RNG and sampling helpers                        | NFR-03                            | `src/domain/random/*.spec.ts`                                           | [ ]    |
+| HRG-20 | Seeded RNG and sampling helpers                        | NFR-03                            | `src/domain/random/*.spec.ts`                                           | [x]    |
 | HRG-21 | Horse generation and silk palette                      | HORSE-01, HORSE-02, HORSE-03      | `src/domain/horse/generateHorses.spec.ts`                               | [ ]    |
 | HRG-22 | Program generation with simulations                    | PROG-01, PROG-02, PROG-03         | `src/domain/race/generateProgram.spec.ts`                               | [ ]    |
 | HRG-23 | Round simulation, placements, progress and calibration | RACE-04, RES-01                   | `simulateRound.spec.ts`, `rankPlacements.spec.ts`, `progressAt.spec.ts` | [ ]    |
