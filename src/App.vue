@@ -1,11 +1,18 @@
-<script setup lang="ts"></script>
-
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+    <main class="app-shell">
+        <h1 class="title">Horse Racing</h1>
+    </main>
 </template>
 
-<style scoped></style>
+<style scoped>
+.app-shell {
+    display: grid;
+    place-items: center;
+    min-block-size: 100dvb;
+    font-family: system-ui, sans-serif;
+}
+
+.title {
+    margin: 0;
+}
+</style>
