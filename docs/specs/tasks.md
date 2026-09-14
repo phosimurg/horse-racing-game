@@ -27,12 +27,12 @@ Branch `chore/walking-skeleton`.
 | HRG-11 | TypeScript strictness and project references for colocated specs                      | NFR-04         | `npm run type-check`                                                         | [x]    |
 | HRG-12 | ESLint, Oxlint, Stylelint and Prettier with house style and import boundaries         | ADR 0001       | `npm run lint`, `npm run lint:style`, deliberate boundary violation rejected | [x]    |
 | HRG-13 | Vitest: jsdom, coverage include and thresholds, console guard                         | NFR-04         | `npm run test:unit`                                                          | [x]    |
-| HRG-14 | Playwright: preview server, projects, page-error and axe fixtures                     | NFR-01, NFR-04 | `npm run test:e2e`                                                           | [ ]    |
+| HRG-14 | Playwright: preview server, projects, page-error and axe fixtures                     | NFR-01, NFR-04 | `npm run test:e2e`                                                           | [x]    |
 | HRG-15 | husky, lint-staged and commitlint                                                     |                | A non-conventional commit message is rejected                                | [x]    |
 | HRG-16 | Agent configuration: `AGENTS.md`, `CLAUDE.md`, rules, agents, skills, hooks, settings |                | Hook dry runs block a `.env` edit                                            | [x]    |
-| HRG-17 | App shell with smoke unit, E2E and visual tests                                       |                | All CI jobs green                                                            | [ ]    |
+| HRG-17 | App shell with smoke unit, E2E and visual tests                                       |                | All CI jobs green                                                            | [x]    |
 | HRG-18 | Traceability script in report mode                                                    | All            | `npm run verify`                                                             | [x]    |
-| HRG-19 | CI workflows (quality, e2e, visual, deploy) and pull request template                 |                | Green pull request checks                                                    | [ ]    |
+| HRG-19 | CI workflows (quality, e2e, visual, deploy) and pull request template                 |                | Green pull request checks                                                    | [x]    |
 
 ## Phase 2: Domain
 

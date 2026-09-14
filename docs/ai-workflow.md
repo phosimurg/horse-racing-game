@@ -112,7 +112,15 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
 6. **The preview tool started a different project.**
    - Issue: the Browser preview picked a launch configuration from another project in the parent folder.
    - Caught by: the reported server name and port.
-   - Resolution: that server was stopped at once.
+   - Resolution: that server was stopped at once, and with the author's approval a dedicated entry was added to the parent launch configuration.
+7. **Commit messages lost their headers.**
+   - Issue: the first batch of commits put a shell line continuation after each message heredoc, which swallowed the Conventional Commit header.
+   - Caught by: the commitlint hook rejected all eight messages before any commit was created.
+   - Resolution: the commits were recreated by a script without line continuations.
+8. **The application shell relied on the host background.**
+   - Issue: in the Browser pane the shell showed the host's dark backdrop behind black text, because the page sets no colors of its own.
+   - Caught by: the Browser pane screenshot.
+   - Resolution: the temporary shell stays as it is; the Phase 4a tokens define explicit background and text colors for both themes (design section 8).
 
 ### Guardrails proven before relying on them
 
@@ -120,6 +128,7 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
 - `allow-test-files-only.mjs` exits 2 for an implementation file and 0 for spec and end-to-end files.
 - commitlint rejects a non-conventional header and an unknown scope, and accepts a valid message.
 - ESLint reports all seven deliberate layer violations across the domain, stores, common components and UI kit.
+- The commit-msg hook rejected eight malformed messages on its first real use.
 
 ## Task log
 
@@ -127,4 +136,4 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
 | ---------------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- | -------------------- | ------------------------------------------- |
 | HRG-01           | Running the scaffold command                                                                     | Approval of the scaffold options                                                  | None                 | None                                        |
 | HRG-02 to HRG-07 | Drafting the plan copy, specifications, task breakdown, ADRs and this log from the approved plan | Approval with decisions D1 to D7, which changed the roster, pause and upset rules | None so far          | None                                        |
-| HRG-10 to HRG-19 | Version and engine research, configuration drafts, crash diagnosis                               | Node upgrade to 22.23.2 and local Docker use                                      | Phase 1 items 1 to 6 | Dependency changes use npm 11 (`AGENTS.md`) |
+| HRG-10 to HRG-19 | Version and engine research, configuration drafts, crash diagnosis                               | Node upgrade to 22.23.2, local Docker use, GitHub Pages and the preview entry     | Phase 1 items 1 to 8 | Dependency changes use npm 11 (`AGENTS.md`) |
