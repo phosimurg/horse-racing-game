@@ -21,16 +21,16 @@ The toolchain must be current, officially supported and mutually compatible as o
 
 ### Test layers
 
-| Level | Tool | Scope | Gate |
-| --- | --- | --- | --- |
-| Domain unit and property tests | Vitest | `src/domain` | 100% coverage |
-| Mutation tests | Stryker | `src/domain` | Score of at least 80; a planted mutant must be killed |
-| Store and composable tests | Vitest with fake timers | `src/stores`, `src/composables` | Global coverage thresholds (90, branches 85) |
-| Component tests | Vitest and Vue Test Utils | Components and view components | Zero Vue warnings |
-| End-to-end tests | Playwright: chromium full suite, firefox and webkit smoke subset | User flows on the production build | Green |
-| Accessibility tests | `@axe-core/playwright` and keyboard specs | Both themes, desktop and mobile | No violations |
-| Visual regression | Playwright `toHaveScreenshot` | 10 baselines | No diff beyond tolerance |
-| Traceability | `scripts/check-traceability.mjs` | Requirement IDs in test titles | Every ID covered |
+| Level                          | Tool                                                             | Scope                              | Gate                                                  |
+| ------------------------------ | ---------------------------------------------------------------- | ---------------------------------- | ----------------------------------------------------- |
+| Domain unit and property tests | Vitest                                                           | `src/domain`                       | 100% coverage                                         |
+| Mutation tests                 | Stryker                                                          | `src/domain`                       | Score of at least 80; a planted mutant must be killed |
+| Store and composable tests     | Vitest with fake timers                                          | `src/stores`, `src/composables`    | Global coverage thresholds (90, branches 85)          |
+| Component tests                | Vitest and Vue Test Utils                                        | Components and view components     | Zero Vue warnings                                     |
+| End-to-end tests               | Playwright: chromium full suite, firefox and webkit smoke subset | User flows on the production build | Green                                                 |
+| Accessibility tests            | `@axe-core/playwright` and keyboard specs                        | Both themes, desktop and mobile    | No violations                                         |
+| Visual regression              | Playwright `toHaveScreenshot`                                    | 10 baselines                       | No diff beyond tolerance                              |
+| Traceability                   | `scripts/check-traceability.mjs`                                 | Requirement IDs in test titles     | Every ID covered                                      |
 
 ### Determinism
 
@@ -43,14 +43,16 @@ The toolchain must be current, officially supported and mutually compatible as o
 
 ### Toolchain pins
 
-| Tool | Version | Reason |
-| --- | --- | --- |
-| Vue | 3.5.42 | Latest stable; 3.6 is a release candidate |
-| TypeScript | 6.0.3 | typescript-eslint 8.70 supports TypeScript below 6.1; TypeScript 7 is not supported yet |
-| Vitest | 4.1.11 | Stryker's vitest-runner 10.0.0 matches no tests on Vitest 5, so every mutant survives (stryker-js #6210, fix pending in #6214) |
-| Playwright | 1.63.0 | Stable screenshot assertions; Vitest's `toMatchScreenshot` is still experimental |
-| Stryker | 10.0.0 | Mutation testing for `src/domain` |
-| ESLint and Oxlint | 10.10 and 1.82 | eslint-plugin-oxlint 1.82 declares a peer dependency on oxlint 1.82 |
+| Tool              | Version                                                  | Reason                                                                                                                                  |
+| ----------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Vue               | 3.5.42                                                   | Latest stable; 3.6 is a release candidate                                                                                               |
+| TypeScript        | 6.0.3                                                    | typescript-eslint 8.70 supports TypeScript below 6.1; TypeScript 7 is not supported yet                                                 |
+| Vitest            | 4.1.11                                                   | Stryker's vitest-runner 10.0.0 matches no tests on Vitest 5, so every mutant survives (stryker-js #6210, fix pending in #6214)          |
+| Playwright        | 1.63.0                                                   | Stable screenshot assertions; Vitest's `toMatchScreenshot` is still experimental                                                        |
+| Stryker           | 10.0.0                                                   | Mutation testing for `src/domain`                                                                                                       |
+| ESLint and Oxlint | 10.10 and 1.82                                           | eslint-plugin-oxlint 1.82 declares a peer dependency on oxlint 1.82                                                                     |
+| Node.js           | `^22.22.2`, `^24.15.0` or `>=26.0.0`; CI uses 24         | The current releases of jsdom, npm-run-all2 and lint-staged, and nopt and abbrev pulled in by Vue Test Utils, require these patch lines |
+| npm               | 11 for dependency changes; `npm ci` works with 10 and 11 | Without a lockfile, npm 10.9 crashes while resolving the Vitest 4 peer set (npm/cli#9787)                                               |
 
 ### Not adopted
 
@@ -71,6 +73,7 @@ The toolchain must be current, officially supported and mutually compatible as o
 - stryker-js releases the fix for issue #6210: upgrade to Vitest 5.
 - typescript-eslint supports TypeScript 7: evaluate the upgrade.
 - Vue 3.6 becomes stable.
+- npm/cli#9787 is fixed in npm 10: dependency changes no longer need npm 11.
 
 ## References
 
@@ -78,4 +81,5 @@ The toolchain must be current, officially supported and mutually compatible as o
 - Playwright: [Clock](https://playwright.dev/docs/clock), [Visual comparisons](https://playwright.dev/docs/test-snapshots), [Docker](https://playwright.dev/docs/docker)
 - GitHub: [GitHub-hosted runners](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
 - Vitest: [Coverage configuration](https://vitest.dev/config/coverage)
+- npm: [npm/cli#9787](https://github.com/npm/cli/issues/9787)
 - Vue: [create-vue](https://github.com/vuejs/create-vue)

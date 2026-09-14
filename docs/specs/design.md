@@ -1,11 +1,11 @@
 # Design Specification
 
-| Field | Value |
-| --- | --- |
-| Status | Approved with author decisions |
-| Last updated | 2026-09-14 |
-| Requirements | [requirements.md](requirements.md) |
-| Decisions | [ADR 0001](../adr/0001-architecture-and-state-ownership.md), [ADR 0002](../adr/0002-race-simulation-and-determinism.md), [ADR 0003](../adr/0003-testing-strategy-and-toolchain.md) |
+| Field        | Value                                                                                                                                                                              |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Status       | Approved with author decisions                                                                                                                                                     |
+| Last updated | 2026-09-14                                                                                                                                                                         |
+| Requirements | [requirements.md](requirements.md)                                                                                                                                                 |
+| Decisions    | [ADR 0001](../adr/0001-architecture-and-state-ownership.md), [ADR 0002](../adr/0002-race-simulation-and-determinism.md), [ADR 0003](../adr/0003-testing-strategy-and-toolchain.md) |
 
 ## 1. Goals
 
@@ -56,14 +56,14 @@ flowchart TB
 
 Enforced with ESLint `no-restricted-imports` and `no-restricted-globals`.
 
-| Layer | May import | Must not import |
-| --- | --- | --- |
-| `domain` | `domain` | Vue, Pinia, DOM globals, any other `src` layer |
-| `stores` | `domain`, other stores, `composables/useRng` | components, views |
-| `composables` | `domain`, `stores`, `utils` | components, views |
-| `components/ui` | `utils` | `domain`, `stores`, `composables` |
-| `components/common`, `views/*/components` | `components`, `domain`, `utils` | `stores`, `composables` |
-| `views/*/*View.vue` | Everything above | |
+| Layer                                     | May import                                   | Must not import                                |
+| ----------------------------------------- | -------------------------------------------- | ---------------------------------------------- |
+| `domain`                                  | `domain`                                     | Vue, Pinia, DOM globals, any other `src` layer |
+| `stores`                                  | `domain`, other stores, `composables/useRng` | components, views                              |
+| `composables`                             | `domain`, `stores`, `utils`                  | components, views                              |
+| `components/ui`                           | `utils`                                      | `domain`, `stores`, `composables`              |
+| `components/common`, `views/*/components` | `components`, `domain`, `utils`              | `stores`, `composables`                        |
+| `views/*/*View.vue`                       | Everything above                             |                                                |
 
 Only the view reads stores and calls composables; every other component is props in, events out.
 
@@ -98,77 +98,85 @@ Unit and component tests sit next to their source as `*.spec.ts`.
 type HorseId = number;
 
 interface HorseColor {
-    readonly name: string;
-    readonly hex: string;
+  readonly name: string;
+  readonly hex: string;
 }
 
 interface Horse {
-    readonly id: HorseId;
-    readonly name: string;
-    readonly color: HorseColor;
-    readonly condition: number;
+  readonly id: HorseId;
+  readonly name: string;
+  readonly color: HorseColor;
+  readonly condition: number;
 }
 
 interface Round {
-    readonly number: number;
-    readonly distance: number;
-    readonly horseIds: readonly HorseId[]; // lane = index + 1
+  readonly number: number;
+  readonly distance: number;
+  readonly horseIds: readonly HorseId[]; // lane = index + 1
 }
 
 interface HorseRun {
-    readonly horseId: HorseId;
-    readonly lane: number;
-    readonly checkpointsMs: readonly number[]; // cumulative, one per segment; last = finish time
+  readonly horseId: HorseId;
+  readonly lane: number;
+  readonly checkpointsMs: readonly number[]; // cumulative, one per segment; last = finish time
 }
 
 interface RoundSimulation {
-    readonly round: Round;
-    readonly runs: readonly HorseRun[];
-    readonly durationMs: number;
+  readonly round: Round;
+  readonly runs: readonly HorseRun[];
+  readonly durationMs: number;
 }
 
 interface RaceProgram {
-    readonly rounds: readonly Round[];
-    readonly simulations: readonly RoundSimulation[];
+  readonly rounds: readonly Round[];
+  readonly simulations: readonly RoundSimulation[];
 }
 
 interface Placement {
-    readonly position: number;
-    readonly horseId: HorseId;
-    readonly finishTimeMs: number;
+  readonly position: number;
+  readonly horseId: HorseId;
+  readonly finishTimeMs: number;
 }
 
 interface RoundResult {
-    readonly roundNumber: number;
-    readonly distance: number;
-    readonly placements: readonly Placement[];
+  readonly roundNumber: number;
+  readonly distance: number;
+  readonly placements: readonly Placement[];
 }
 
 type RaceStatus = 'idle' | 'ready' | 'running' | 'paused' | 'finished';
 
 interface PlaybackState {
-    readonly roundIndex: number;
-    readonly phase: 'racing' | 'intermission';
-    readonly elapsedMs: number;
+  readonly roundIndex: number;
+  readonly phase: 'racing' | 'intermission';
+  readonly elapsedMs: number;
 }
 
 interface PlaybackStep {
-    readonly state: PlaybackState;
-    readonly completedRoundIndexes: readonly number[];
-    readonly isFinished: boolean;
+  readonly state: PlaybackState;
+  readonly completedRoundIndexes: readonly number[];
+  readonly isFinished: boolean;
 }
 
 interface Rng {
-    next(): number; // [0, 1)
+  next(): number; // [0, 1)
 }
 
 declare function createRng(seed: number): Rng;
 declare function generateHorses(rng: Rng): Horse[];
 declare function generateProgram(horses: readonly Horse[], rng: Rng): RaceProgram;
-declare function simulateRound(round: Round, horsesById: ReadonlyMap<HorseId, Horse>, rng: Rng): RoundSimulation;
+declare function simulateRound(
+  round: Round,
+  horsesById: ReadonlyMap<HorseId, Horse>,
+  rng: Rng
+): RoundSimulation;
 declare function rankPlacements(simulation: RoundSimulation): Placement[];
 declare function progressAt(run: HorseRun, elapsedMs: number): number; // 0..1
-declare function advancePlayback(state: PlaybackState, deltaMs: number, program: RaceProgram): PlaybackStep;
+declare function advancePlayback(
+  state: PlaybackState,
+  deltaMs: number,
+  program: RaceProgram
+): PlaybackStep;
 ```
 
 ### 3.1 Invariants
@@ -202,30 +210,30 @@ Jitter averages out over 12 to 22 segments, because its spread shrinks with the 
 
 Initial values, calibrated in HRG-23 against section 4.3.
 
-| Constant | Initial value | Purpose |
-| --- | --- | --- |
-| `HORSE_COUNT` | 20 | Rule 1 |
-| `HORSES_PER_ROUND` | 10 | Rule 5 |
-| `ROUND_DISTANCES_M` | 1200, 1400, 1600, 1800, 2000, 2200 | Rule 6 |
-| `CONDITION_MIN`, `CONDITION_MAX` | 1, 100 | Rule 3 |
-| `SEGMENT_LENGTH_M` | 100 | Simulation resolution |
-| `BASE_SPEED_MPS` | 16 | Speed at condition 100 before randomness |
-| `MIN_CONDITION_FACTOR` | 0.82 | Share of base speed kept at condition 0 |
-| `FORM_VARIANCE` | 0.02 | Per-round form spread, kept small so condition dominates |
-| `SEGMENT_JITTER` | 0.05 | Per-segment spread |
-| `PLAYBACK_SPEED` | 18 | Simulated seconds per real second |
-| `INTERMISSION_MS` | 1500 | Pause between rounds |
-| `MAX_FRAME_DELTA_MS` | 100 | Upper bound for one frame's time step |
+| Constant                         | Initial value                      | Purpose                                                  |
+| -------------------------------- | ---------------------------------- | -------------------------------------------------------- |
+| `HORSE_COUNT`                    | 20                                 | Rule 1                                                   |
+| `HORSES_PER_ROUND`               | 10                                 | Rule 5                                                   |
+| `ROUND_DISTANCES_M`              | 1200, 1400, 1600, 1800, 2000, 2200 | Rule 6                                                   |
+| `CONDITION_MIN`, `CONDITION_MAX` | 1, 100                             | Rule 3                                                   |
+| `SEGMENT_LENGTH_M`               | 100                                | Simulation resolution                                    |
+| `BASE_SPEED_MPS`                 | 16                                 | Speed at condition 100 before randomness                 |
+| `MIN_CONDITION_FACTOR`           | 0.82                               | Share of base speed kept at condition 0                  |
+| `FORM_VARIANCE`                  | 0.02                               | Per-round form spread, kept small so condition dominates |
+| `SEGMENT_JITTER`                 | 0.05                               | Per-segment spread                                       |
+| `PLAYBACK_SPEED`                 | 18                                 | Simulated seconds per real second                        |
+| `INTERMISSION_MS`                | 1500                               | Pause between rounds                                     |
+| `MAX_FRAME_DELTA_MS`             | 100                                | Upper bound for one frame's time step                    |
 
 ### 4.3 Calibration targets
 
 Measured with a seeded Monte Carlo test over at least 2000 head-to-head rounds at 1200 m. Assertion bounds are at least 5 standard errors wide, so reordering random draws cannot flip the result.
 
-| Condition gap | Win rate of the better horse |
-| --- | --- |
-| 10 points | 75% to 92% |
-| 20 points | At least 93% |
-| 30 points or more | At least 99% |
+| Condition gap     | Win rate of the better horse |
+| ----------------- | ---------------------------- |
+| 10 points         | 75% to 92%                   |
+| 20 points         | At least 93%                 |
+| 30 points or more | At least 99%                 |
 
 Playback targets: winners finish in about 4 to 6 s at 1200 m and 7 to 10 s at 2200 m.
 
@@ -237,14 +245,14 @@ Playback targets: winners finish in about 4 to 6 s at 1200 m and 7 to 10 s at 22
 
 ## 5. State ownership
 
-| State | Owner | Reason |
-| --- | --- | --- |
-| Roster | `useHorsesStore` | Global; read by roster, program, results and track |
-| Program, results, race status | `useRaceStore` | Global lifecycle; changes only on user actions and round boundaries |
+| State                            | Owner                          | Reason                                                                                           |
+| -------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Roster                           | `useHorsesStore`               | Global; read by roster, program, results and track                                               |
+| Program, results, race status    | `useRaceStore`                 | Global lifecycle; changes only on user actions and round boundaries                              |
 | Playback clock, progress, leader | `useRacePlayback` (view scope) | Changes every frame; keeping it out of Pinia keeps devtools readable and store tests synchronous |
-| Theme | `useTheme` | App preference persisted in `localStorage` |
-| Layout mode | `useMediaQuery` | Derived from the viewport |
-| Announcements | `useAnnouncer` | Transient messages for the live region |
+| Theme                            | `useTheme`                     | App preference persisted in `localStorage`                                                       |
+| Layout mode                      | `useMediaQuery`                | Derived from the viewport                                                                        |
+| Announcements                    | `useAnnouncer`                 | Transient messages for the live region                                                           |
 
 ### 5.1 Stores
 
@@ -252,22 +260,22 @@ Setup stores; the shapes below are what consumers see on the store instance.
 
 ```ts
 interface HorsesStore {
-    readonly horses: readonly Horse[];
-    readonly horsesById: ReadonlyMap<HorseId, Horse>;
-    generate(): void;
+  readonly horses: readonly Horse[];
+  readonly horsesById: ReadonlyMap<HorseId, Horse>;
+  generate(): void;
 }
 
 interface RaceStore {
-    readonly status: RaceStatus;
-    readonly program: RaceProgram | null;
-    readonly results: readonly RoundResult[];
-    readonly canGenerate: boolean;
-    readonly canStart: boolean;
-    generateProgram(): void;
-    start(): void;
-    pause(): void;
-    toggle(): void;
-    completeRound(roundIndex: number): void;
+  readonly status: RaceStatus;
+  readonly program: RaceProgram | null;
+  readonly results: readonly RoundResult[];
+  readonly canGenerate: boolean;
+  readonly canStart: boolean;
+  generateProgram(): void;
+  start(): void;
+  pause(): void;
+  toggle(): void;
+  completeRound(roundIndex: number): void;
 }
 ```
 
@@ -279,10 +287,10 @@ interface RaceStore {
 
 ```ts
 interface RacePlayback {
-    readonly activeRound: Round | null;
-    readonly phase: 'racing' | 'intermission';
-    readonly progressByHorseId: ReadonlyMap<HorseId, number>;
-    readonly leaderId: HorseId | null;
+  readonly activeRound: Round | null;
+  readonly phase: 'racing' | 'intermission';
+  readonly progressByHorseId: ReadonlyMap<HorseId, number>;
+  readonly leaderId: HorseId | null;
 }
 ```
 
@@ -326,37 +334,37 @@ The complete state and event table, including no-ops, is in [requirements.md](re
 
 ### 7.1 Screen states
 
-| State | Track | Program | Results | Race control | Generate Program |
-| --- | --- | --- | --- | --- | --- |
-| `idle` | Guidance to generate a program | Guidance | Guidance | Start, disabled | Enabled |
-| `ready` | Round 1 horses at the start gate | 6 racecards, all Upcoming | Guidance that results appear per lap | Start | Enabled; draws a new roster and program |
-| `running`, racing | Horses moving; lower third with lap and leader | Running round Live with `aria-current` | Completed laps | Pause | Disabled |
-| `running`, intermission | Finished round held at the line | Finished round marked Finished | Newest lap scrolled into view | Pause | Disabled |
-| `paused` | Frozen | Unchanged | Unchanged | Resume | Disabled |
-| `finished` | Round 6 held at the line | All Finished | All 6 laps | Start, disabled | Enabled |
+| State                   | Track                                          | Program                                | Results                              | Race control    | Generate Program                        |
+| ----------------------- | ---------------------------------------------- | -------------------------------------- | ------------------------------------ | --------------- | --------------------------------------- |
+| `idle`                  | Guidance to generate a program                 | Guidance                               | Guidance                             | Start, disabled | Enabled                                 |
+| `ready`                 | Round 1 horses at the start gate               | 6 racecards, all Upcoming              | Guidance that results appear per lap | Start           | Enabled; draws a new roster and program |
+| `running`, racing       | Horses moving; lower third with lap and leader | Running round Live with `aria-current` | Completed laps                       | Pause           | Disabled                                |
+| `running`, intermission | Finished round held at the line                | Finished round marked Finished         | Newest lap scrolled into view        | Pause           | Disabled                                |
+| `paused`                | Frozen                                         | Unchanged                              | Unchanged                            | Resume          | Disabled                                |
+| `finished`              | Round 6 held at the line                       | All Finished                           | All 6 laps                           | Start, disabled | Enabled                                 |
 
 ### 7.2 Announcements
 
 A single polite live region; nothing is announced per frame.
 
-| Trigger | Message |
-| --- | --- |
-| Program generated | "New program ready: 20 new horses, 6 laps from 1200 to 2200 meters." |
-| Race started | "Race started. Lap 1, 1200 meters." |
-| Next round started | "Lap 2, 1400 meters." |
-| Round completed | "Lap 1 finished. Winner: Ada Lovelace." |
-| Paused | "Race paused." |
-| Resumed | "Race resumed." |
-| Race finished | "Race finished. All 6 laps complete." |
+| Trigger            | Message                                                              |
+| ------------------ | -------------------------------------------------------------------- |
+| Program generated  | "New program ready: 20 new horses, 6 laps from 1200 to 2200 meters." |
+| Race started       | "Race started. Lap 1, 1200 meters."                                  |
+| Next round started | "Lap 2, 1400 meters."                                                |
+| Round completed    | "Lap 1 finished. Winner: Ada Lovelace."                              |
+| Paused             | "Race paused."                                                       |
+| Resumed            | "Race resumed."                                                      |
+| Race finished      | "Race finished. All 6 laps complete."                                |
 
 ### 7.3 Layout
 
-| Viewport | Layout |
-| --- | --- |
-| 1280 px and wider | Broadcast bar; roster rail, hero track, Program and Results rail |
-| 768 to 1279 px | Broadcast bar; full-width track; roster beside Program and Results |
+| Viewport             | Layout                                                                                                                      |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| 1280 px and wider    | Broadcast bar; roster rail, hero track, Program and Results rail                                                            |
+| 768 to 1279 px       | Broadcast bar; full-width track; roster beside Program and Results                                                          |
 | Narrower than 768 px | Compact bar with a scrollable lap stepper; full-width track; tabs for Horses, Program and Results; sticky bottom action bar |
-| 320 px | Same as the narrow layout, without horizontal scrolling |
+| 320 px               | Same as the narrow layout, without horizontal scrolling                                                                     |
 
 ## 8. Design system: "Race Night" broadcast
 
@@ -405,20 +413,20 @@ Final tokens are extracted in HRG-41 from the design canvas approved in HRG-40.
 
 ### 10.2 WCAG 2.2 AA checklist
 
-| Success criterion | Implementation |
-| --- | --- |
-| 1.3.1 Info and Relationships | Landmarks, headings, table captions and header scope |
-| 1.4.1 Use of Color | Silk colors paired with bib numbers and names; podium markers use text and icons |
-| 1.4.3 Contrast (Minimum), 1.4.11 Non-text Contrast | Text 4.5:1; large text, UI components and focus indicators 3:1, in both themes |
-| 1.4.4 Resize Text, 1.4.12 Text Spacing | Relative units, no fixed heights that clip text |
-| 1.4.10 Reflow | 320 CSS px without horizontal scrolling |
-| 2.1.1 Keyboard, 2.4.3 Focus Order | Every control reachable and operable in a logical order |
-| 2.3.1 Three Flashes or Below Threshold | Photo flash fires once per round and is removed under reduced motion |
-| 2.4.1 Bypass Blocks | Skip link to the race track |
-| 2.4.7 Focus Visible, 2.4.11 Focus Not Obscured (Minimum) | `:focus-visible` rings; `scroll-padding` keeps focus clear of the sticky bar |
-| 2.5.8 Target Size (Minimum) | At least 24 by 24 CSS px, primary controls 44 by 44 |
-| 4.1.2 Name, Role, Value | Native controls; tabs and toggle follow the APG patterns |
-| 4.1.3 Status Messages | Race events announced through the live region |
+| Success criterion                                        | Implementation                                                                   |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| 1.3.1 Info and Relationships                             | Landmarks, headings, table captions and header scope                             |
+| 1.4.1 Use of Color                                       | Silk colors paired with bib numbers and names; podium markers use text and icons |
+| 1.4.3 Contrast (Minimum), 1.4.11 Non-text Contrast       | Text 4.5:1; large text, UI components and focus indicators 3:1, in both themes   |
+| 1.4.4 Resize Text, 1.4.12 Text Spacing                   | Relative units, no fixed heights that clip text                                  |
+| 1.4.10 Reflow                                            | 320 CSS px without horizontal scrolling                                          |
+| 2.1.1 Keyboard, 2.4.3 Focus Order                        | Every control reachable and operable in a logical order                          |
+| 2.3.1 Three Flashes or Below Threshold                   | Photo flash fires once per round and is removed under reduced motion             |
+| 2.4.1 Bypass Blocks                                      | Skip link to the race track                                                      |
+| 2.4.7 Focus Visible, 2.4.11 Focus Not Obscured (Minimum) | `:focus-visible` rings; `scroll-padding` keeps focus clear of the sticky bar     |
+| 2.5.8 Target Size (Minimum)                              | At least 24 by 24 CSS px, primary controls 44 by 44                              |
+| 4.1.2 Name, Role, Value                                  | Native controls; tabs and toggle follow the APG patterns                         |
+| 4.1.3 Status Messages                                    | Race events announced through the live region                                    |
 
 Beyond AA: `prefers-reduced-motion` and `forced-colors` are supported, and `lang="en"` is set.
 
@@ -452,15 +460,15 @@ Beyond AA: `prefers-reduced-motion` and `forced-colors` are supported, and `lang
 
 Details and rationale in ADR 0003.
 
-| Level | Tool | Scope | Gate |
-| --- | --- | --- | --- |
-| Domain unit and property tests | Vitest | `src/domain` | 100% coverage |
-| Mutation tests | Stryker | `src/domain` | Score of at least 80 |
-| Store and composable tests | Vitest with fake timers | `src/stores`, `src/composables` | Global coverage thresholds |
-| Component tests | Vitest and Vue Test Utils | `src/components`, view components | No Vue warnings |
-| End-to-end tests | Playwright: chromium full suite, firefox and webkit smoke | User flows on the production build | Green |
-| Accessibility tests | `@axe-core/playwright` and keyboard specs | Both themes, desktop and mobile | No violations |
-| Visual regression | Playwright screenshots in the official Docker image on arm64 | 10 baselines | No diff beyond tolerance |
+| Level                          | Tool                                                         | Scope                              | Gate                       |
+| ------------------------------ | ------------------------------------------------------------ | ---------------------------------- | -------------------------- |
+| Domain unit and property tests | Vitest                                                       | `src/domain`                       | 100% coverage              |
+| Mutation tests                 | Stryker                                                      | `src/domain`                       | Score of at least 80       |
+| Store and composable tests     | Vitest with fake timers                                      | `src/stores`, `src/composables`    | Global coverage thresholds |
+| Component tests                | Vitest and Vue Test Utils                                    | `src/components`, view components  | No Vue warnings            |
+| End-to-end tests               | Playwright: chromium full suite, firefox and webkit smoke    | User flows on the production build | Green                      |
+| Accessibility tests            | `@axe-core/playwright` and keyboard specs                    | Both themes, desktop and mobile    | No violations              |
+| Visual regression              | Playwright screenshots in the official Docker image on arm64 | 10 baselines                       | No diff beyond tolerance   |
 
 ## 12. Extension points
 
