@@ -54,7 +54,7 @@ flowchart TB
 
 ### 2.1 Layer rules
 
-Enforced with ESLint `no-restricted-imports` and `no-restricted-globals`.
+Enforced with ESLint `no-restricted-imports` and `no-restricted-globals`. Helpers in `src/test` are for `*.spec.ts` files only, which `no-restricted-syntax` enforces in every layer.
 
 | Layer                                     | May import                                   | Must not import                                |
 | ----------------------------------------- | -------------------------------------------- | ---------------------------------------------- |
