@@ -1,73 +1,32 @@
-# horse-racing-game
+# Horse Racing
 
-This template should help get you started developing with Vue 3 in Vite.
+An interactive horse racing game built with Vue 3, TypeScript and Pinia for the Insider One frontend assessment. Generate a program of six laps from 1200 to 2200 meters and watch ten of twenty horses race each lap.
 
-## Recommended IDE Setup
+> Status: in development. Progress is tracked in [docs/specs/tasks.md](docs/specs/tasks.md).
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Quick start
 
-## Recommended Browser Setup
+Requires Node.js `^22.22.2`, `^24.15.0` or `>=26.0.0`.
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
+```bash
+npm ci
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+## Scripts
 
-```sh
-npm run build
-```
+| Command                      | Purpose                                                                          |
+| ---------------------------- | -------------------------------------------------------------------------------- |
+| `npm run dev`                | Start the development server                                                     |
+| `npm run verify`             | Lint, format check, type-check, unit tests with coverage, build and traceability |
+| `npm run test:e2e`           | End-to-end tests with Playwright                                                 |
+| `npm run test:visual:docker` | Visual regression tests inside the official Playwright image                     |
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+## Documentation
 
-```sh
-npm run test:unit
-```
-
-### Run End-to-End Tests with [Playwright](https://playwright.dev)
-
-```sh
-# Install browsers for the first run
-npx playwright install
-
-# When testing on CI, must build the project first
-npm run build
-
-# Runs the end-to-end tests
-npm run test:e2e
-# Runs the tests only on Chromium
-npm run test:e2e -- --project=chromium
-# Runs the tests of a specific file
-npm run test:e2e -- tests/example.spec.ts
-# Runs the tests in debug mode
-npm run test:e2e -- --debug
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+- [Requirements](docs/specs/requirements.md)
+- [Design](docs/specs/design.md)
+- [Tasks](docs/specs/tasks.md)
+- [Architecture decisions](docs/adr/)
+- [Implementation plan](docs/implementation-plan.md)
+- [AI-assisted workflow log](docs/ai-workflow.md)
