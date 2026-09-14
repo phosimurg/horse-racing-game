@@ -31,6 +31,14 @@ This project is built with an AI coding agent (Claude Code) under the author's d
 - A modern, original interface instead of a copy of the example, with responsive layout and accessibility as hard requirements.
 - A written rationale for leaving out a router, a component library and Tailwind, now recorded in ADR 0001.
 - Publishing the approved plan in the repository for reviewers.
+- Spec decisions D1 to D7 in the requirements:
+  - always 20 horses;
+  - Generate Program also draws a new roster;
+  - no fatigue;
+  - Generate Program disabled while paused;
+  - rounds end when every horse finishes;
+  - only a very slight upset factor.
+- Removing the recruiter questions. The agent flagged two consequences: a roster is still drawn at load so the list is never empty, and a started race can only finish or be abandoned by reloading the page.
 
 ### Where the agent was wrong or incomplete, and how it was caught
 
@@ -82,4 +90,4 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
 | Task | Delegated to the agent | Kept by the author | Agent issue caught | Rule added |
 | --- | --- | --- | --- | --- |
 | HRG-01 | Running the scaffold command | Approval of the scaffold options | None | None |
-| HRG-02 to HRG-07 | Drafting the plan copy, specifications, task breakdown, ADRs and this log from the approved plan | Approval of requirements, assumptions and contracts (pending) | None so far | None |
+| HRG-02 to HRG-07 | Drafting the plan copy, specifications, task breakdown, ADRs and this log from the approved plan | Approval with decisions D1 to D7, which changed the roster, pause and upset rules | None so far | None |

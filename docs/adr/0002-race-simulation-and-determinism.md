@@ -6,7 +6,7 @@
 
 ## Context and problem statement
 
-Each round must produce a believable result where condition matters without dictating the outcome. Horses must move visibly, with lead changes. The race must pause, resume and replay exactly. Unit, end-to-end and visual tests must be deterministic.
+Each round must produce a believable result where condition decides the outcome, with only occasional upsets between closely matched horses (requirements decision D7). Horses must move visibly, with lead changes. The race must pause, resume and replay exactly. Unit, end-to-end and visual tests must be deterministic.
 
 ## Decision drivers
 

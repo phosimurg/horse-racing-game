@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | Draft for approval |
+| Status | Approved with author decisions |
 | Last updated | 2026-09-14 |
 | Requirements | [requirements.md](requirements.md) |
 | Decisions | [ADR 0001](../adr/0001-architecture-and-state-ownership.md), [ADR 0002](../adr/0002-race-simulation-and-determinism.md), [ADR 0003](../adr/0003-testing-strategy-and-toolchain.md) |
@@ -46,6 +46,7 @@ flowchart TB
     RP --> RS
     RP --> PB
     HS --> GEN
+    RS --> HS
     RS --> GEN
     RS --> SIM
     GEN --> RNG
@@ -58,7 +59,7 @@ Enforced with ESLint `no-restricted-imports` and `no-restricted-globals`.
 | Layer | May import | Must not import |
 | --- | --- | --- |
 | `domain` | `domain` | Vue, Pinia, DOM globals, any other `src` layer |
-| `stores` | `domain`, `composables/useRng` | components, views |
+| `stores` | `domain`, other stores, `composables/useRng` | components, views |
 | `composables` | `domain`, `stores`, `utils` | components, views |
 | `components/ui` | `utils` | `domain`, `stores`, `composables` |
 | `components/common`, `views/*/components` | `components`, `domain`, `utils` | `stores`, `composables` |
@@ -195,7 +196,7 @@ jitter(h, r, s)    uniform in [1 - SEGMENT_JITTER, 1 + SEGMENT_JITTER], drawn on
 segmentMs          = SEGMENT_LENGTH_M / speed * 1000 / PLAYBACK_SPEED
 ```
 
-Jitter alone averages out over 12 to 22 segments, because its spread shrinks with the square root of the segment count, and would make results nearly deterministic. `form` keeps upsets realistic; `jitter` creates lead changes within a round.
+Jitter averages out over 12 to 22 segments, because its spread shrinks with the square root of the segment count, so it creates lead changes within a round without deciding it. A small `form` factor allows occasional upsets between closely matched horses while condition stays dominant (decision D7).
 
 ### 4.2 Constants
 
@@ -210,8 +211,8 @@ Initial values, calibrated in HRG-23 against section 4.3.
 | `SEGMENT_LENGTH_M` | 100 | Simulation resolution |
 | `BASE_SPEED_MPS` | 16 | Speed at condition 100 before randomness |
 | `MIN_CONDITION_FACTOR` | 0.82 | Share of base speed kept at condition 0 |
-| `FORM_VARIANCE` | 0.05 | Per-round form spread |
-| `SEGMENT_JITTER` | 0.06 | Per-segment spread |
+| `FORM_VARIANCE` | 0.02 | Per-round form spread, kept small so condition dominates |
+| `SEGMENT_JITTER` | 0.05 | Per-segment spread |
 | `PLAYBACK_SPEED` | 18 | Simulated seconds per real second |
 | `INTERMISSION_MS` | 1500 | Pause between rounds |
 | `MAX_FRAME_DELTA_MS` | 100 | Upper bound for one frame's time step |
@@ -222,16 +223,16 @@ Measured with a seeded Monte Carlo test over at least 2000 head-to-head rounds a
 
 | Condition gap | Win rate of the better horse |
 | --- | --- |
-| 10 points | 60% to 75% |
-| 30 points | 82% to 95% |
-| 60 points or more | At least 99% |
+| 10 points | 75% to 92% |
+| 20 points | At least 93% |
+| 30 points or more | At least 99% |
 
 Playback targets: winners finish in about 4 to 6 s at 1200 m and 7 to 10 s at 2200 m.
 
 ### 4.4 Determinism
 
 - `createRng(seed)` implements mulberry32: a 32-bit generator that is fast and adequate for games, not for cryptography.
-- Randomness is consumed in a fixed order and only at generation time: horses at load, then rounds and all six simulations on Generate Program. Playback consumes none, so pausing, frame rate and tab visibility cannot change results.
+- Randomness is consumed in a fixed order and only at generation time: a roster at load, then a new roster, the rounds and all six simulations on each Generate Program. Playback consumes none, so pausing, frame rate and tab visibility cannot change results.
 - `resolveSeed` accepts a decimal uint32 from `?seed=`; anything else falls back to `crypto.getRandomValues`.
 
 ## 5. State ownership
@@ -270,7 +271,7 @@ interface RaceStore {
 }
 ```
 
-- `generateProgram` is a no-op while running; in the other states it replaces the program and clears results.
+- `generateProgram` is a no-op while running or paused. In the other states it draws a new roster through `useHorsesStore().generate()`, builds a program from that roster and clears results, so one user action replaces both (decision D2).
 - `completeRound(i)` is accepted only while running and only when `i` equals the number of stored results; any other call is a no-op. The sixth result moves the race to `finished`.
 - `program` and `results` are `shallowRef`s holding immutable data.
 
@@ -310,7 +311,6 @@ stateDiagram-v2
     ready --> running: Start
     running --> paused: Pause
     paused --> running: Resume
-    paused --> ready: Generate Program
     running --> finished: Round 6 completed
     finished --> ready: Generate Program
     state running {
@@ -329,10 +329,10 @@ The complete state and event table, including no-ops, is in [requirements.md](re
 | State | Track | Program | Results | Race control | Generate Program |
 | --- | --- | --- | --- | --- | --- |
 | `idle` | Guidance to generate a program | Guidance | Guidance | Start, disabled | Enabled |
-| `ready` | Round 1 horses at the start gate | 6 racecards, all Upcoming | Guidance that results appear per lap | Start | Enabled |
+| `ready` | Round 1 horses at the start gate | 6 racecards, all Upcoming | Guidance that results appear per lap | Start | Enabled; draws a new roster and program |
 | `running`, racing | Horses moving; lower third with lap and leader | Running round Live with `aria-current` | Completed laps | Pause | Disabled |
 | `running`, intermission | Finished round held at the line | Finished round marked Finished | Newest lap scrolled into view | Pause | Disabled |
-| `paused` | Frozen | Unchanged | Unchanged | Resume | Enabled |
+| `paused` | Frozen | Unchanged | Unchanged | Resume | Disabled |
 | `finished` | Round 6 held at the line | All Finished | All 6 laps | Start, disabled | Enabled |
 
 ### 7.2 Announcements
@@ -341,7 +341,7 @@ A single polite live region; nothing is announced per frame.
 
 | Trigger | Message |
 | --- | --- |
-| Program generated | "New program ready: 6 laps from 1200 to 2200 meters." |
+| Program generated | "New program ready: 20 new horses, 6 laps from 1200 to 2200 meters." |
 | Race started | "Race started. Lap 1, 1200 meters." |
 | Next round started | "Lap 2, 1400 meters." |
 | Round completed | "Lap 1 finished. Winner: Ada Lovelace." |

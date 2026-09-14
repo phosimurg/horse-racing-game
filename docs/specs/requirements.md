@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Status | Draft for approval |
+| Status | Approved with author decisions |
 | Last updated | 2026-09-14 |
 | Source | Insider One "Software Developer Assessment Project" brief |
 | Related | [Design](design.md), [Tasks](tasks.md), [ADRs](../adr/) |
@@ -20,6 +20,7 @@ Out of scope: accounts, persistence of past races, betting, multiplayer and back
 | Term | Meaning |
 | --- | --- |
 | Horse | A racer with an id from 1 to 20, a unique name, a unique silk color and a condition score |
+| Roster | The current list of 20 horses |
 | Condition | Integer from 1 to 100; a higher condition means a higher expected speed |
 | Program | The generated schedule of 6 rounds (the brief's "race schedule") |
 | Race | The whole 6-round program, from Start to the end of round 6 |
@@ -57,7 +58,7 @@ Out of scope: accounts, persistence of past races, betting, multiplayer and back
 - **HORSE-01** The system shall maintain exactly 20 horses with ids 1 to 20.
 - **HORSE-02** The system shall give each horse a name and a color that no other horse shares; each color shall have a human-readable name and a hex value.
 - **HORSE-03** The system shall give each horse an integer condition from 1 to 100 inclusive.
-- **HORSE-04** When the application loads, the system shall generate the horses at random and list each horse's name, condition and color.
+- **HORSE-04** When the application loads, and whenever the user activates Generate Program, the system shall generate a new roster at random and list each horse's name, condition and color.
 
 ### 4.2 Program
 
@@ -71,7 +72,7 @@ Out of scope: accounts, persistence of past races, betting, multiplayer and back
 - **RACE-01** When the user activates Start while a program is ready, the system shall run the rounds in order, one at a time, with an intermission between consecutive rounds.
 - **RACE-02** While a round is running, the system shall move each horse along its lane in proportion to its simulated progress, show the lap title and the current leader on the track, and mark the running round in the Program panel and the lap stepper with `aria-current`.
 - **RACE-03** When the user activates Pause while the race is running, including during an intermission, the system shall freeze horse positions and all race timers; when the user activates Resume, the system shall continue from the frozen state. The race control shall read Start, Pause or Resume according to the lifecycle table in section 6.
-- **RACE-04** The system shall derive every round's finishing order from a simulation in which a higher condition raises a horse's expected speed and per-round randomness allows upsets.
+- **RACE-04** The system shall derive every round's finishing order from a simulation in which condition is the dominant factor and a small random factor allows occasional upsets between horses with close conditions.
 - **RACE-05** If animation frames are delayed (for example in a hidden tab) or the viewport is resized during a round, then the system shall not skip, reorder or visually distort the round.
 
 ### 4.4 Results
@@ -82,7 +83,7 @@ Out of scope: accounts, persistence of past races, betting, multiplayer and back
 ### 4.5 Controls
 
 - **CTRL-01** While no program exists or the race is finished, the system shall disable the race control.
-- **CTRL-02** While the race is running, the system shall disable Generate Program; repeated activations of any control shall have the same effect as a single activation.
+- **CTRL-02** While the race is running or paused, the system shall disable Generate Program; repeated activations of any control shall have the same effect as a single activation.
 
 ### 4.6 Experience
 
@@ -105,36 +106,34 @@ States: `idle` (no program), `ready` (program generated, race not started), `run
 
 | State | Generate Program | Race control | Round completed | Round 6 completed |
 | --- | --- | --- | --- | --- |
-| `idle` | Create program, go to `ready` | Disabled, reads Start (no-op) | Not applicable | Not applicable |
-| `ready` | Replace program, clear results, stay `ready` | Reads Start: go to `running`, round 1 starts | Not applicable | Not applicable |
+| `idle` | Draw a new roster and program, go to `ready` | Disabled, reads Start (no-op) | Not applicable | Not applicable |
+| `ready` | Draw a new roster and program, clear results, stay `ready` | Reads Start: go to `running`, round 1 starts | Not applicable | Not applicable |
 | `running` | Disabled (no-op) | Reads Pause: go to `paused` | Append result, start intermission, stay `running` | Append result, go to `finished` |
-| `paused` | Discard race, replace program, clear results, go to `ready` | Reads Resume: go to `running` from the frozen state | Cannot occur: timers frozen | Cannot occur: timers frozen |
-| `finished` | Replace program, clear results, go to `ready` | Disabled, reads Start (no-op) | Not applicable | Not applicable |
+| `paused` | Disabled (no-op) | Reads Resume: go to `running` from the frozen state | Cannot occur: timers frozen | Cannot occur: timers frozen |
+| `finished` | Draw a new roster and program, clear results, go to `ready` | Disabled, reads Start (no-op) | Not applicable | Not applicable |
 
 Round completion events come from the playback engine, never from the user. Every no-op cell is covered by a unit test (CTRL-02).
 
-## 7. Assumptions
+## 7. Author decisions
 
-- **A1 Horse count:** "between 1 to 20 horses" is read as the numbering of the list. Rule 1 fixes the total at 20, and rule 5 would be impossible with fewer than 10 horses.
-- **A2 Generate scope:** horses are generated once per page load; Generate Program only draws a new schedule.
-- **A3 Condition:** a horse's condition stays constant across rounds; there is no fatigue model.
-- **A4 Generate while paused:** discards the race in progress and prepares a new program.
-- **A5 End of a round:** a round ends when its last horse finishes; an intermission follows, except after round 6.
-- **A6 Terminology:** "race" names the 6-round program and "round" one lap, matching the example's "1ST Lap - 1200m" labels.
-- **A7 Upsets:** the better-conditioned horse usually, but not always, wins its head-to-head comparison.
+The brief leaves these points open; the author decided them on 2026-09-14.
 
-## 8. Clarification questions for the recruiter
+- **D1 Horse count:** the roster always has exactly 20 horses; "between 1 to 20 horses" is read as the numbering of the list.
+- **D2 Generate scope:** every Generate Program draws a new roster and a new program. A roster is also drawn when the application loads, so the Horse List is never empty.
+- **D3 Condition:** a horse's condition stays constant across rounds; there is no fatigue model.
+- **D4 Generate during a race:** Generate Program is unavailable while the race is running or paused. A started race continues until round 6 finishes; reloading the page starts over.
+- **D5 End of a round:** a round ends when every horse has crossed the finish line; an intermission follows, except after round 6.
+- **D6 Terminology:** "race" names the 6-round program and "round" one lap, matching the example's "1ST Lap - 1200m" labels.
+- **D7 Upsets:** condition decides results. A very slight random factor lets closely matched horses swap places occasionally, while large condition gaps are practically never overturned.
 
-Each question lists the assumption applied until it is answered.
-
-1. Should the horse list always contain exactly 20 horses, or may the count vary between 1 and 20? (A1)
-2. Should Generate also create a new horse list, or only a new race schedule? (A2)
-3. Should a horse's condition change between rounds, for example through fatigue? (A3)
-4. Should Generate be available while a race is paused? (A4)
-5. Should a round end when the winner crosses the line or when every horse has finished? (A5)
-6. How strongly should condition decide results, and are upsets expected? (A7)
-
-## 9. Verification
+## 8. Verification
 
 - `scripts/check-traceability.mjs` fails the build when a requirement ID has no test whose title contains it.
 - [tasks.md](tasks.md) maps each ID to its implementation task and test files.
+
+## 9. Revision history
+
+| Date | Change |
+| --- | --- |
+| 2026-09-14 | Initial draft from the approved implementation plan |
+| 2026-09-14 | Author decisions D1 to D7 replace the open assumptions and recruiter questions. Changes: Generate Program also draws a new roster (was: roster drawn once per page load); Generate Program is disabled while paused (was: discards the race in progress); upsets are limited to closely matched horses (was: realistic upsets) |

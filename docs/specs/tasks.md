@@ -10,12 +10,12 @@ Branch `docs/spec`.
 | --- | --- | --- | --- | --- |
 | HRG-01 | Scaffold with create-vue 3.23.0 and commit the output untouched | ADR 0003 | Baseline commit on `main` | [x] |
 | HRG-02 | Commit the approved implementation plan | | [implementation-plan.md](../implementation-plan.md) | [x] |
-| HRG-03 | Requirements specification: EARS criteria, glossary, lifecycle table, assumptions | All | Owner approval | [x] |
+| HRG-03 | Requirements specification: EARS criteria, glossary, lifecycle table, author decisions | All | Owner approval | [x] |
 | HRG-04 | Design specification: architecture, contracts, simulation, UX, standards | All | Owner approval | [x] |
 | HRG-05 | Task breakdown | All | This file | [x] |
 | HRG-06 | ADRs 0001 to 0003 | | Owner approval | [x] |
 | HRG-07 | AI workflow log: planning session | | [ai-workflow.md](../ai-workflow.md) | [x] |
-| HRG-08 | Create the public repository and push | | Remote `main` and the Phase 0 pull request | [ ] |
+| HRG-08 | Create the public repository and push | | Remote `main` and the Phase 0 pull request | [x] |
 
 ## Phase 1: Walking skeleton and guardrails
 
@@ -54,7 +54,7 @@ Branch `feat/state`.
 | ID | Task | Requirements | Tests | Status |
 | --- | --- | --- | --- | --- |
 | HRG-30 | Horses store | HORSE-04 | `src/stores/horses.spec.ts` | [ ] |
-| HRG-31 | Race store lifecycle, including every no-op of the lifecycle table | PROG-04, RES-01, RES-02, CTRL-01, CTRL-02 | `src/stores/race.spec.ts` | [ ] |
+| HRG-31 | Race store lifecycle, including every no-op of the lifecycle table | HORSE-04, PROG-04, RES-01, RES-02, CTRL-01, CTRL-02 | `src/stores/race.spec.ts` | [ ] |
 | HRG-32 | RNG injection, seed resolution and test store helper | NFR-03 | `src/composables/useRng.spec.ts`, `src/utils/resolveSeed.spec.ts` | [ ] |
 | HRG-33 | Animation frame and race playback composables | RACE-01, RACE-02, RACE-03, RACE-05 | `useAnimationFrame.spec.ts`, `useRacePlayback.spec.ts` | [ ] |
 | HRG-34 | Theme, media query and announcer composables | UX-02, UX-03, NFR-01 | `useTheme.spec.ts`, `useMediaQuery.spec.ts`, `useAnnouncer.spec.ts` | [ ] |
