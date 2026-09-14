@@ -74,7 +74,7 @@ src/
   main.ts                 bootstrap: Pinia, RNG provide, errorHandler, fonts, global styles
   App.vue                 renders RaceDashboardView
   domain/
-    random/               createRng (mulberry32), randomInt, sampleWithoutReplacement
+    random/               random.types, createRng (mulberry32), randomInt, sampleWithoutReplacement
     horse/                horse.types, horse.constants (name pool, 20 named silk colors), generateHorses
     race/                 race.types, race.constants, generateProgram, simulateRound, rankPlacements, progressAt, advancePlayback
     index.ts              public API
@@ -85,7 +85,7 @@ src/
   views/RaceDashboard/    RaceDashboardView.vue, components/ (AppBar, LapStepper, RaceControls, HorseRoster, RaceTrack, RaceLane, ProgramPanel, ResultsPanel, MobileActionBar)
   utils/                  formatLapTitle, contrastRatio, readableTextColor, resolveSeed
   styles/                 layers.css, tokens.css, base.css, utilities.css
-  test/                   setup, createTestStores
+  test/                   setup, stubRng, createTestStores
 e2e/                      fixtures, behavior specs, visual/
 scripts/                  check-traceability.mjs
 ```
@@ -163,6 +163,8 @@ interface Rng {
 }
 
 declare function createRng(seed: number): Rng;
+declare function randomInt(min: number, max: number, rng: Rng): number; // integer in [min, max]
+declare function sampleWithoutReplacement<T>(items: readonly T[], count: number, rng: Rng): T[];
 declare function generateHorses(rng: Rng): Horse[];
 declare function generateProgram(horses: readonly Horse[], rng: Rng): RaceProgram;
 declare function simulateRound(
@@ -181,6 +183,9 @@ declare function advancePlayback(
 
 ### 3.1 Invariants
 
+- `createRng` returns the same sequence for the same seed, and every value is in [0, 1).
+- `randomInt` returns an integer from `min` to `max` inclusive, each with equal probability, and consumes one draw.
+- `sampleWithoutReplacement` returns the entries at `count` distinct positions of `items` in draw order, consumes `count` draws and never mutates `items`.
 - `generateHorses` returns 20 horses with ids 1 to 20, unique names, unique colors and integer conditions from 1 to 100.
 - `generateProgram` returns 6 rounds with distances from 1200 to 2200 in 200 m steps, 10 distinct horses per round and one simulation per round.
 - `generateProgram` throws when given fewer horses than a round needs.
@@ -189,6 +194,16 @@ declare function advancePlayback(
 - `rankPlacements` assigns positions 1 to 10 exactly once, ordered by finish time, ties broken by lane.
 - `progressAt` is 0 at or before 0 ms, 1 at or after the finish time and non-decreasing in between.
 - `advancePlayback` never loses or double-counts elapsed time across phase or round boundaries, and never reports a round twice.
+
+### 3.2 Input validation
+
+Public domain functions throw an `Error` whose message starts with the function name and names the violated rule, for example `createRng: seed must be an integer from 0 to 4294967295, received -1`.
+
+| Function                   | Rejects                                                                                            |
+| -------------------------- | -------------------------------------------------------------------------------------------------- |
+| `createRng`                | A seed that is not an integer from 0 to 4294967295                                                 |
+| `randomInt`                | Bounds that are not safe integers, `min` greater than `max`, or a range of more than 2^32 integers |
+| `sampleWithoutReplacement` | A count that is not an integer from 0 to `items.length`                                            |
 
 ## 4. Race simulation
 
@@ -239,7 +254,9 @@ Playback targets: winners finish in about 4 to 6 s at 1200 m and 7 to 10 s at 22
 
 ### 4.4 Determinism
 
-- `createRng(seed)` implements mulberry32: a 32-bit generator that is fast and adequate for games, not for cryptography.
+- `createRng(seed)` implements mulberry32: a 32-bit generator that is fast and adequate for games, not for cryptography. `next()` divides each 32-bit output by 2^32.
+- `randomInt(min, max, rng)` returns `min + floor(next() * (max - min + 1))`. A draw has 2^32 possible values, so a range holds at most 2^32 integers to stay uniform.
+- `sampleWithoutReplacement(items, count, rng)` selects and removes: each draw removes the entry at `randomInt(0, remaining.length - 1, rng)` from `remaining`, a copy of the entries not drawn yet, and appends it to the sample.
 - Randomness is consumed in a fixed order and only at generation time: a roster at load, then a new roster, the rounds and all six simulations on each Generate Program. Playback consumes none, so pausing, frame rate and tab visibility cannot change results.
 - `resolveSeed` accepts a decimal uint32 from `?seed=`; anything else falls back to `crypto.getRandomValues`.
 
