@@ -1,3 +1,9 @@
+import '@fontsource-variable/archivo/standard.css';
+import './styles/layers.css';
+import './styles/tokens.css';
+import './styles/base.css';
+import './styles/utilities.css';
+
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 
