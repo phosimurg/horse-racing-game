@@ -80,7 +80,7 @@ Branch `feat/race-dashboard`.
 | HRG-50 | End-to-end behavior specs, written failing first            | HORSE-04, PROG-01 to PROG-04, RACE-01 to RACE-05, RES-01, RES-02, CTRL-01, CTRL-02 | `e2e/*.spec.ts`             | [x]    |
 | HRG-51 | View wiring and responsive layout                           | RACE-02, UX-03                                                                     | `e2e/layout.spec.ts`        | [x]    |
 | HRG-52 | Accessibility: keyboard flow, axe, reduced motion, themes   | NFR-01, NFR-02, UX-02                                                              | `e2e/accessibility.spec.ts` | [x]    |
-| HRG-53 | Production hardening: CSP, metadata, favicon, error handler | NFR-04, NFR-06                                                                     | `e2e/production.spec.ts`    | [ ]    |
+| HRG-53 | Production hardening: CSP, metadata, favicon, error handler | NFR-04, NFR-06                                                                     | `e2e/production.spec.ts`    | [x]    |
 | HRG-54 | Traceability check switched to enforcing                    | All                                                                                | `npm run verify`            | [x]    |
 
 ## Phase 5: Visual regression
