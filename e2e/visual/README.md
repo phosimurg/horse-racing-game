@@ -34,6 +34,16 @@ Or in CI, without Docker on the machine:
 gh workflow run CI --ref <branch> -f update-snapshots=true
 ```
 
+When the run finishes, find its ID, remove the old baselines and download the new set. `gh run download` refuses to overwrite files, and removing them also drops baselines whose tests no longer exist.
+
+```bash
+gh run list --workflow CI --branch <branch> --event workflow_dispatch --limit 1
+```
+
+```bash
+rm -rf e2e/visual/*-snapshots
+```
+
 ```bash
 gh run download <run-id> -n visual-baselines -D e2e
 ```

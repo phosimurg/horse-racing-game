@@ -42,13 +42,13 @@ function rowsOf(result: RoundResult) {
 }
 
 // RES-01: bring the newest lap into view inside the panel. scrollIntoView would scroll the page too.
-function scrollToNewestLap(): void {
+function scrollToNewestLap(behavior: ScrollBehavior = 'auto'): void {
     const newest = list.value?.lastElementChild;
     if (!list.value || !newest) {
         return;
     }
     const offset = newest.getBoundingClientRect().top - list.value.getBoundingClientRect().top;
-    list.value.scrollTo({ top: list.value.scrollTop + offset });
+    list.value.scrollTo({ top: list.value.scrollTop + offset, behavior });
 }
 
 // A hidden tab panel cannot scroll, so the list also catches up when it becomes visible.
@@ -65,7 +65,7 @@ watch(
 // A remount, such as crossing the narrow layout breakpoint, would otherwise start at lap 1.
 onMounted(() => {
     if (visible) {
-        scrollToNewestLap();
+        scrollToNewestLap('instant');
     }
 });
 </script>

@@ -254,6 +254,10 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
    - Caught by: the HRG-61 review of the visual job.
    - Resolution: the visual project never retries, `updateSnapshots` is `'none'`, the finished-race tests are marked slow, and `e2e/visual/README.md` documents comparing and updating baselines.
 
+### Phase review
+
+- The Phase 5 review found no Critical or High issues. It flagged a CI baseline download that `gh run download` refuses over existing files, a remount test not traced to RACE-05, a smooth scroll on remount and missing requirement IDs in the HRG-60 row; all were fixed.
+
 ## Task log
 
 | Task                        | Delegated to the agent                                                                                                               | Kept by the author                                                                                              | Agent issue caught          | Rule added                                                               |
