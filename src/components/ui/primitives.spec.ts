@@ -39,7 +39,7 @@ describe('[RES-01] BaseTable', () => {
                     { position: 1, name: 'Ada Lovelace' },
                     { position: 2, name: 'Alan Turing' },
                 ],
-                rowKey: (row: Record<string, unknown>) => String(row.position),
+                rowKey: (row: object) => String((row as { position: number }).position),
             },
             slots: { 'cell-name': '<strong>{{ params.row.name }}</strong>' },
         });

@@ -1,4 +1,4 @@
-<script setup lang="ts" generic="Row extends Record<string, unknown>">
+<script setup lang="ts" generic="Row extends object">
 const {
     caption,
     columns,
@@ -12,6 +12,10 @@ const {
     rowKey: (row: Row) => string;
     captionHidden?: boolean;
 }>();
+
+function cellValue(row: Row, key: string): unknown {
+    return (row as Record<string, unknown>)[key];
+}
 </script>
 
 <template>
@@ -47,7 +51,7 @@ const {
                         :name="`cell-${column.key}`"
                         :row="row"
                     >
-                        {{ row[column.key] }}
+                        {{ cellValue(row, column.key) }}
                     </slot>
                 </td>
             </tr>
