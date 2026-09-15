@@ -184,7 +184,7 @@ declare function advancePlayback(
 ### 3.1 Invariants
 
 - `createRng` returns the same sequence for the same seed, and every value is in [0, 1).
-- `randomInt` returns an integer from `min` to `max` inclusive, each with equal probability, and consumes one draw.
+- `randomInt` returns an integer from `min` to `max` inclusive and consumes one draw.
 - `sampleWithoutReplacement` returns the entries at `count` distinct positions of `items` in draw order, consumes `count` draws and never mutates `items`.
 - `generateHorses` returns 20 horses with ids 1 to 20, unique names, unique colors and integer conditions from 1 to 100, and consumes 60 draws.
 - `HORSE_NAMES` holds 40 unique, non-blank names; `SILK_COLORS` holds 20 colors with unique, non-blank names and unique lowercase `#rrggbb` hex values.
@@ -259,7 +259,7 @@ Playback targets: winners finish in about 4 to 6 s at 1200 m and 7 to 10 s at 22
 ### 4.4 Determinism
 
 - `createRng(seed)` implements mulberry32: a 32-bit generator that is fast and adequate for games, not for cryptography. `next()` divides each 32-bit output by 2^32.
-- `randomInt(min, max, rng)` returns `min + floor(next() * (max - min + 1))`. A draw has 2^32 possible values, so a range holds at most 2^32 integers to stay uniform.
+- `randomInt(min, max, rng)` returns `min + floor(next() * (max - min + 1))`. A draw has 2^32 possible values, so ranges of more than 2^32 integers are rejected; results are exactly uniform only when the range size is a power of two.
 - `sampleWithoutReplacement(items, count, rng)` selects and removes: each draw removes the entry at `randomInt(0, remaining.length - 1, rng)` from `remaining`, a copy of the entries not drawn yet, and appends it to the sample.
 - `generateHorses(rng)` samples 20 names from `HORSE_NAMES`, then all 20 `SILK_COLORS`, both with `sampleWithoutReplacement`, then draws one condition per horse in id order with `randomInt(CONDITION_MIN, CONDITION_MAX, rng)`. Horse n gets the nth sampled name and color.
 - Randomness is consumed in a fixed order and only at generation time: a roster at load, then a new roster, the rounds and all six simulations on each Generate Program. Playback consumes none, so pausing, frame rate and tab visibility cannot change results.

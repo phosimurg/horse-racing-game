@@ -14,6 +14,8 @@ function layerImport(layers: string[], message: string) {
 
 // esquery regexes cannot contain a literal slash, so \u002F stands for it.
 const TEST_HELPER_IMPORT = String.raw`^(@|\.{1,2})\u002F(.*\u002F)?test(\u002F|$)`;
+const MODULE_SOURCE_NODES =
+    ':matches(ImportDeclaration, ExportNamedDeclaration, ExportAllDeclaration, ImportExpression)';
 
 const DOM_GLOBALS = [
     'window',
@@ -152,10 +154,12 @@ export default withVueTs(
         files: ['src/**/*.{ts,vue}'],
         ignores: ['src/**/*.spec.ts', 'src/test/**'],
         rules: {
+            // The only no-restricted-syntax block: add new selectors here, because a later block
+            // that sets this rule would replace these options.
             'no-restricted-syntax': [
                 'error',
                 {
-                    selector: `ImportDeclaration[source.value=/${TEST_HELPER_IMPORT}/]`,
+                    selector: `${MODULE_SOURCE_NODES}[source.value=/${TEST_HELPER_IMPORT}/]`,
                     message: 'Only spec files may import test helpers.',
                 },
             ],

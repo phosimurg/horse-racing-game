@@ -146,6 +146,14 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
    - Issue: Magenta and Teal reached 4.5:1 only against pure black or white bib text; against `#151515` or `#f5f5f5` they fell to 4.18:1 and 4.37:1, and no test computed contrast.
    - Caught by: the reviewer agent, which measured every silk against near-black and near-white text.
    - Resolution: design 3.1 bounds the palette against `#151515` and `#f5f5f5`, a WCAG contrast test covers all 20 silks, and four colors were retuned to at least 5.06:1.
+4. **The test helper rule missed re-exports and dynamic imports.**
+   - Issue: the selector matched only import declarations, so `export * from '@/test/stubRng'` or `import()` in a barrel passed lint.
+   - Caught by: the reviewer agent, re-checking the HRG-20 resolutions with in-memory ESLint probes.
+   - Resolution: the rule also matches export-from declarations and import expressions.
+5. **The design promised uniformity the formula cannot deliver.**
+   - Issue: after the range cap, the design said every integer in a range is equally likely, but splitting 2^32 draw values is exact only for power-of-two range sizes.
+   - Caught by: the reviewer agent, which counted the draw values that map to each result.
+   - Resolution: sections 3.1 and 4.4 state the limit; the game's ranges hold at most 100 integers, where the skew is one draw value in 2^32.
 
 ### Environment
 
@@ -154,13 +162,14 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
 ### Guardrails proven before relying on them
 
 - The test helper rule rejects an alias import and a relative import in a `.ts` file and an alias import in a `.vue` file, and accepts spec files.
+- The widened rule reports all six probe forms: an import, a named re-export, `export *`, a type re-export and a dynamic import in a `.ts` file, and a re-export in a `.vue` file. The first probe run printed nothing because ESLint 10 no longer ships the `unix` formatter, so the empty output was treated as a failed check, not a pass.
 
 ## Task log
 
-| Task             | Delegated to the agent                                                                                                          | Kept by the author                                                                                              | Agent issue caught    | Rule added                                           |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------- | ---------------------------------------------------- |
-| HRG-01           | Running the scaffold command                                                                                                    | Approval of the scaffold options                                                                                | None                  | None                                                 |
-| HRG-02 to HRG-07 | Drafting the plan copy, specifications, task breakdown, ADRs and this log from the approved plan                                | Approval with decisions D1 to D7, which changed the roster, pause and upset rules                               | None so far           | None                                                 |
-| HRG-10 to HRG-19 | Version and engine research, configuration drafts, crash diagnosis                                                              | Node upgrade to 22.23.2, local Docker use, GitHub Pages and the preview entry                                   | Phase 1 items 1 to 8  | Dependency changes use npm 11 (`AGENTS.md`)          |
-| HRG-20           | Tests from design sections 3.1, 3.2 and 4.4 (test-author), mulberry32 reference values derived two ways, implementation, review | Phase 2 exit criteria and the Stryker installation; the design additions await review in the phase pull request | Phase 2 items 1 and 2 | Test helpers stay in spec files (`eslint.config.ts`) |
-| HRG-21           | Tests from design sections 3.1, 4.2 and 4.4 (test-author), palette contrast and distinctness checks, implementation, review     | The name pool theme and the palette await review in the phase pull request                                      | Phase 2 item 3        | None                                                 |
+| Task             | Delegated to the agent                                                                                                          | Kept by the author                                                                                              | Agent issue caught          | Rule added                                           |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------- | ---------------------------------------------------- |
+| HRG-01           | Running the scaffold command                                                                                                    | Approval of the scaffold options                                                                                | None                        | None                                                 |
+| HRG-02 to HRG-07 | Drafting the plan copy, specifications, task breakdown, ADRs and this log from the approved plan                                | Approval with decisions D1 to D7, which changed the roster, pause and upset rules                               | None so far                 | None                                                 |
+| HRG-10 to HRG-19 | Version and engine research, configuration drafts, crash diagnosis                                                              | Node upgrade to 22.23.2, local Docker use, GitHub Pages and the preview entry                                   | Phase 1 items 1 to 8        | Dependency changes use npm 11 (`AGENTS.md`)          |
+| HRG-20           | Tests from design sections 3.1, 3.2 and 4.4 (test-author), mulberry32 reference values derived two ways, implementation, review | Phase 2 exit criteria and the Stryker installation; the design additions await review in the phase pull request | Phase 2 items 1, 2, 4 and 5 | Test helpers stay in spec files (`eslint.config.ts`) |
+| HRG-21           | Tests from design sections 3.1, 4.2 and 4.4 (test-author), palette contrast and distinctness checks, implementation, review     | The name pool theme and the palette await review in the phase pull request                                      | Phase 2 item 3              | None                                                 |
