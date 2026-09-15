@@ -171,6 +171,7 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
 ### Phase review
 
 - The single Opus review of Phase 2 found no Critical or High issues. It flagged the missing leader tie rule (now in design 5.2 for HRG-33), unvalidated playback state, a finish-line test that checked one horse, a mutation path filter without the Vite config and `package.json`, and process docs that still required e2e on every pull request; all were fixed.
+- The Phase 3 review found no Critical or High issues. It flagged dropped announcements, repeated activations under CTRL-02, a missing pause-during-intermission test, a weak fallback seed test and design drift; the announcer now joins pending messages, the view guard is specified in design 7.4, and the tests and design were updated.
 
 ### Environment
 

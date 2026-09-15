@@ -85,7 +85,7 @@ src/
   views/RaceDashboard/    RaceDashboardView.vue, components/ (AppBar, LapStepper, RaceControls, HorseRoster, RaceTrack, RaceLane, ProgramPanel, ResultsPanel, MobileActionBar)
   utils/                  formatLapTitle, contrastRatio, readableTextColor, resolveSeed
   styles/                 layers.css, tokens.css, base.css, utilities.css
-  test/                   setup, stubRng, createTestStores
+  test/                   setup, stubRng, createTestStores, animationFrames, matchMedia
 e2e/                      fixtures, behavior specs, visual/
 scripts/                  check-traceability.mjs
 ```
@@ -318,10 +318,10 @@ interface RaceStore {
 
 ```ts
 interface RacePlayback {
-  readonly activeRound: Round | null;
-  readonly phase: 'racing' | 'intermission';
-  readonly progressByHorseId: ReadonlyMap<HorseId, number>;
-  readonly leaderId: HorseId | null;
+  readonly activeRound: ComputedRef<Round | null>;
+  readonly phase: ComputedRef<'racing' | 'intermission'>;
+  readonly progressByHorseId: ComputedRef<ReadonlyMap<HorseId, number>>;
+  readonly leaderId: ComputedRef<HorseId | null>;
 }
 ```
 
@@ -329,8 +329,8 @@ Frame algorithm while `status === 'running'`:
 
 1. `delta = min(timestamp - lastTimestamp, MAX_FRAME_DELTA_MS)`; the first frame after a start or resume uses 0.
 2. `step = advancePlayback(state, delta, program)`.
-3. Call `raceStore.completeRound(index)` for every index in `step.completedRoundIndexes`.
-4. `state = step.state`.
+3. `state = step.state`.
+4. Call `raceStore.completeRound(index)` for every index in `step.completedRoundIndexes`.
 
 On pause, finish or unmount the frame is cancelled and `lastTimestamp` is cleared. A new program resets the state to round 0, racing, 0 ms.
 
@@ -376,7 +376,7 @@ The complete state and event table, including no-ops, is in [requirements.md](re
 
 ### 7.2 Announcements
 
-A single polite live region; nothing is announced per frame.
+A single polite live region; nothing is announced per frame. Messages that arrive before the live region updates are joined into one announcement, so a round's winner and the race finish are both read.
 
 | Trigger            | Message                                                              |
 | ------------------ | -------------------------------------------------------------------- |
@@ -396,6 +396,10 @@ A single polite live region; nothing is announced per frame.
 | 768 to 1279 px       | Broadcast bar; full-width track; roster beside Program and Results                                                          |
 | Narrower than 768 px | Compact bar with a scrollable lap stepper; full-width track; tabs for Horses, Program and Results; sticky bottom action bar |
 | 320 px               | Same as the narrow layout, without horizontal scrolling                                                                     |
+
+### 7.4 Repeated activations
+
+CTRL-02 covers repeated activations of one control, such as a double click or a held key. The view ignores a `click` whose `detail` is above 1 and a `keydown` with `repeat`, so a double click on Start never pauses and a double click on Generate Program draws one roster. HRG-50 covers this with a double-click end-to-end test.
 
 ## 8. Design system: "Race Night" broadcast
 
