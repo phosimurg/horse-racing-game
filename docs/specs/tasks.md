@@ -53,9 +53,9 @@ Branch `feat/state`.
 
 | ID     | Task                                                               | Requirements                                        | Tests                                                               | Status |
 | ------ | ------------------------------------------------------------------ | --------------------------------------------------- | ------------------------------------------------------------------- | ------ |
-| HRG-30 | Horses store                                                       | HORSE-04                                            | `src/stores/horses.spec.ts`                                         | [ ]    |
-| HRG-31 | Race store lifecycle, including every no-op of the lifecycle table | HORSE-04, PROG-04, RES-01, RES-02, CTRL-01, CTRL-02 | `src/stores/race.spec.ts`                                           | [ ]    |
-| HRG-32 | RNG injection, seed resolution and test store helper               | NFR-03                                              | `src/composables/useRng.spec.ts`, `src/utils/resolveSeed.spec.ts`   | [ ]    |
+| HRG-30 | Horses store                                                       | HORSE-04                                            | `src/stores/horses.spec.ts`                                         | [x]    |
+| HRG-31 | Race store lifecycle, including every no-op of the lifecycle table | HORSE-04, PROG-04, RES-01, RES-02, CTRL-01, CTRL-02 | `src/stores/race.spec.ts`                                           | [x]    |
+| HRG-32 | RNG injection, seed resolution and test store helper               | NFR-03                                              | `src/composables/useRng.spec.ts`, `src/utils/resolveSeed.spec.ts`   | [x]    |
 | HRG-33 | Animation frame and race playback composables                      | RACE-01, RACE-02, RACE-03, RACE-05                  | `useAnimationFrame.spec.ts`, `useRacePlayback.spec.ts`              | [ ]    |
 | HRG-34 | Theme, media query and announcer composables                       | UX-02, UX-03, NFR-01                                | `useTheme.spec.ts`, `useMediaQuery.spec.ts`, `useAnnouncer.spec.ts` | [ ]    |
 

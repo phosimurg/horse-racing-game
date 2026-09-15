@@ -311,6 +311,7 @@ interface RaceStore {
 
 - `generateProgram` is a no-op while running or paused. In the other states it draws a new roster through `useHorsesStore().generate()`, builds a program from that roster and clears results, so one user action replaces both (decision D2).
 - `completeRound(i)` is accepted only while running and only when `i` equals the number of stored results; any other call is a no-op. The sixth result moves the race to `finished`.
+- `canStart` is true while the race control applies (ready, running or paused). `start()` runs a ready race or resumes a paused one, `pause()` pauses a running race, and `toggle()` calls whichever applies.
 - `program` and `results` are `shallowRef`s holding immutable data.
 
 ### 5.2 Playback
@@ -333,7 +334,7 @@ Frame algorithm while `status === 'running'`:
 
 On pause, finish or unmount the frame is cancelled and `lastTimestamp` is cleared. A new program resets the state to round 0, racing, 0 ms.
 
-Round timeline: racing from 0 ms to `durationMs` (the last horse finishes and the result is published), then intermission for `INTERMISSION_MS`, then the next round starts. Leftover time carries across each boundary. A phase ends when its elapsed time reaches its duration, and the last round has no intermission.
+Round timeline: racing from 0 ms to `durationMs` (the last horse finishes and the result is published), then intermission for `INTERMISSION_MS`, then the next round starts. Leftover time carries across each boundary. A phase ends when its elapsed time reaches its duration, and the last round has no intermission. During an intermission every horse of the finished round shows progress 1. `leaderId` is null until a horse has moved; afterwards it is the horse with the most progress, ties broken by finish time and then lane, so a finished round names its winner.
 
 ### 5.3 RNG injection
 
