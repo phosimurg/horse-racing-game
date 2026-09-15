@@ -75,7 +75,7 @@ src/
   App.vue                 renders RaceDashboardView
   domain/
     random/               random.types, createRng (mulberry32), randomInt, sampleWithoutReplacement
-    horse/                horse.types, horse.constants (name pool, 20 named silk colors), generateHorses
+    horse/                horse.types, horse.constants (count, condition bounds, name pool, 20 named silk colors), generateHorses
     race/                 race.types, race.constants, generateProgram, simulateRound, rankPlacements, progressAt, advancePlayback
     index.ts              public API
   stores/                 horses.ts, race.ts
@@ -186,7 +186,9 @@ declare function advancePlayback(
 - `createRng` returns the same sequence for the same seed, and every value is in [0, 1).
 - `randomInt` returns an integer from `min` to `max` inclusive, each with equal probability, and consumes one draw.
 - `sampleWithoutReplacement` returns the entries at `count` distinct positions of `items` in draw order, consumes `count` draws and never mutates `items`.
-- `generateHorses` returns 20 horses with ids 1 to 20, unique names, unique colors and integer conditions from 1 to 100.
+- `generateHorses` returns 20 horses with ids 1 to 20, unique names, unique colors and integer conditions from 1 to 100, and consumes 60 draws.
+- `HORSE_NAMES` holds 40 unique, non-blank names; `SILK_COLORS` holds 20 colors with unique, non-blank names and unique lowercase `#rrggbb` hex values.
+- Every `SILK_COLORS` hex reaches a WCAG 2.2 contrast ratio of at least 4.5:1 against `#151515` or against `#f5f5f5`, so bib text at least that dark or that light stays readable.
 - `generateProgram` returns 6 rounds with distances from 1200 to 2200 in 200 m steps, 10 distinct horses per round and one simulation per round.
 - `generateProgram` throws when given fewer horses than a round needs.
 - Every `checkpointsMs` list is strictly increasing and has `distance / SEGMENT_LENGTH_M` entries.
@@ -223,22 +225,24 @@ Jitter averages out over 12 to 22 segments, because its spread shrinks with the 
 
 ### 4.2 Constants
 
-Initial values, calibrated in HRG-23 against section 4.3.
+Initial values; the simulation constants are calibrated in HRG-23 against section 4.3.
 
-| Constant                         | Initial value                      | Purpose                                                  |
-| -------------------------------- | ---------------------------------- | -------------------------------------------------------- |
-| `HORSE_COUNT`                    | 20                                 | Rule 1                                                   |
-| `HORSES_PER_ROUND`               | 10                                 | Rule 5                                                   |
-| `ROUND_DISTANCES_M`              | 1200, 1400, 1600, 1800, 2000, 2200 | Rule 6                                                   |
-| `CONDITION_MIN`, `CONDITION_MAX` | 1, 100                             | Rule 3                                                   |
-| `SEGMENT_LENGTH_M`               | 100                                | Simulation resolution                                    |
-| `BASE_SPEED_MPS`                 | 16                                 | Speed at condition 100 before randomness                 |
-| `MIN_CONDITION_FACTOR`           | 0.82                               | Share of base speed kept at condition 0                  |
-| `FORM_VARIANCE`                  | 0.02                               | Per-round form spread, kept small so condition dominates |
-| `SEGMENT_JITTER`                 | 0.05                               | Per-segment spread                                       |
-| `PLAYBACK_SPEED`                 | 18                                 | Simulated seconds per real second                        |
-| `INTERMISSION_MS`                | 1500                               | Pause between rounds                                     |
-| `MAX_FRAME_DELTA_MS`             | 100                                | Upper bound for one frame's time step                    |
+| Constant                         | Initial value                                       | Purpose                                                  |
+| -------------------------------- | --------------------------------------------------- | -------------------------------------------------------- |
+| `HORSE_COUNT`                    | 20                                                  | Rule 1                                                   |
+| `HORSES_PER_ROUND`               | 10                                                  | Rule 5                                                   |
+| `ROUND_DISTANCES_M`              | 1200, 1400, 1600, 1800, 2000, 2200                  | Rule 6                                                   |
+| `CONDITION_MIN`, `CONDITION_MAX` | 1, 100                                              | Rule 3                                                   |
+| `HORSE_NAMES`                    | 40 names of computing pioneers                      | Name pool; each roster draws 20 names without repeats    |
+| `SILK_COLORS`                    | 20 named colors with lowercase `#rrggbb` hex values | Rule 2; each roster uses every color once                |
+| `SEGMENT_LENGTH_M`               | 100                                                 | Simulation resolution                                    |
+| `BASE_SPEED_MPS`                 | 16                                                  | Speed at condition 100 before randomness                 |
+| `MIN_CONDITION_FACTOR`           | 0.82                                                | Share of base speed kept at condition 0                  |
+| `FORM_VARIANCE`                  | 0.02                                                | Per-round form spread, kept small so condition dominates |
+| `SEGMENT_JITTER`                 | 0.05                                                | Per-segment spread                                       |
+| `PLAYBACK_SPEED`                 | 18                                                  | Simulated seconds per real second                        |
+| `INTERMISSION_MS`                | 1500                                                | Pause between rounds                                     |
+| `MAX_FRAME_DELTA_MS`             | 100                                                 | Upper bound for one frame's time step                    |
 
 ### 4.3 Calibration targets
 
@@ -257,6 +261,7 @@ Playback targets: winners finish in about 4 to 6 s at 1200 m and 7 to 10 s at 22
 - `createRng(seed)` implements mulberry32: a 32-bit generator that is fast and adequate for games, not for cryptography. `next()` divides each 32-bit output by 2^32.
 - `randomInt(min, max, rng)` returns `min + floor(next() * (max - min + 1))`. A draw has 2^32 possible values, so a range holds at most 2^32 integers to stay uniform.
 - `sampleWithoutReplacement(items, count, rng)` selects and removes: each draw removes the entry at `randomInt(0, remaining.length - 1, rng)` from `remaining`, a copy of the entries not drawn yet, and appends it to the sample.
+- `generateHorses(rng)` samples 20 names from `HORSE_NAMES`, then all 20 `SILK_COLORS`, both with `sampleWithoutReplacement`, then draws one condition per horse in id order with `randomInt(CONDITION_MIN, CONDITION_MAX, rng)`. Horse n gets the nth sampled name and color.
 - Randomness is consumed in a fixed order and only at generation time: a roster at load, then a new roster, the rounds and all six simulations on each Generate Program. Playback consumes none, so pausing, frame rate and tab visibility cannot change results.
 - `resolveSeed` accepts a decimal uint32 from `?seed=`; anything else falls back to `crypto.getRandomValues`.
 
@@ -406,7 +411,7 @@ Final tokens are extracted in HRG-41 from the design canvas approved in HRG-40.
   - Turf green track.
   - A single chartreuse accent for the primary action and live state.
   - Gold, silver and bronze podium markers, always paired with text and an icon.
-  - 20 named racing-silk colors, each with a computed bib text color of at least 4.5:1 contrast.
+  - 20 named racing-silk colors, each with a computed bib text color of at least 4.5:1 contrast. Section 3.1 bounds the palette, so bib text tokens at least as dark as `#151515` and as light as `#f5f5f5` always pass.
 - **Iconography:** Phosphor icons for controls; the runner is an original SVG, because Phosphor's horse icon is a chess-knight head.
 - **Motion:**
   - One staggered reveal on first load, results cards entering with `TransitionGroup`, a lap stepper fill and a gallop bob.

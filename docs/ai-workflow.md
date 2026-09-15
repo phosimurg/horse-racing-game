@@ -142,6 +142,10 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
    - Issue: the layer rules did not stop non-spec files from importing `src/test`, and the type-check would not either, so a stubbed generator could ship in the bundle.
    - Caught by: the reviewer agent, on the first spec that imports a shared helper.
    - Resolution: a `no-restricted-syntax` rule covers every layer (design 2.1).
+3. **Two silk colors had no contrast margin.**
+   - Issue: Magenta and Teal reached 4.5:1 only against pure black or white bib text; against `#151515` or `#f5f5f5` they fell to 4.18:1 and 4.37:1, and no test computed contrast.
+   - Caught by: the reviewer agent, which measured every silk against near-black and near-white text.
+   - Resolution: design 3.1 bounds the palette against `#151515` and `#f5f5f5`, a WCAG contrast test covers all 20 silks, and four colors were retuned to at least 5.06:1.
 
 ### Environment
 
@@ -159,3 +163,4 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
 | HRG-02 to HRG-07 | Drafting the plan copy, specifications, task breakdown, ADRs and this log from the approved plan                                | Approval with decisions D1 to D7, which changed the roster, pause and upset rules                               | None so far           | None                                                 |
 | HRG-10 to HRG-19 | Version and engine research, configuration drafts, crash diagnosis                                                              | Node upgrade to 22.23.2, local Docker use, GitHub Pages and the preview entry                                   | Phase 1 items 1 to 8  | Dependency changes use npm 11 (`AGENTS.md`)          |
 | HRG-20           | Tests from design sections 3.1, 3.2 and 4.4 (test-author), mulberry32 reference values derived two ways, implementation, review | Phase 2 exit criteria and the Stryker installation; the design additions await review in the phase pull request | Phase 2 items 1 and 2 | Test helpers stay in spec files (`eslint.config.ts`) |
+| HRG-21           | Tests from design sections 3.1, 4.2 and 4.4 (test-author), palette contrast and distinctness checks, implementation, review     | The name pool theme and the palette await review in the phase pull request                                      | Phase 2 item 3        | None                                                 |
