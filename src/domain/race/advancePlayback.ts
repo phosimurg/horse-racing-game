@@ -11,7 +11,17 @@ export function advancePlayback(
             `advancePlayback: deltaMs must be a finite number of at least 0, received ${deltaMs}`
         );
     }
+    if (!Number.isFinite(state.elapsedMs) || state.elapsedMs < 0) {
+        throw new Error(
+            `advancePlayback: state.elapsedMs must be a finite number of at least 0, received ${state.elapsedMs}`
+        );
+    }
     const current = simulationAt(program, state.roundIndex);
+    if (state.phase === 'intermission' && isLastRound(program, state.roundIndex)) {
+        throw new Error(
+            `advancePlayback: round index ${state.roundIndex} is the last round and has no intermission`
+        );
+    }
     if (isLastRound(program, state.roundIndex) && state.elapsedMs >= current.durationMs) {
         return { state, completedRoundIndexes: [], isFinished: true };
     }

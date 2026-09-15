@@ -202,14 +202,14 @@ declare function advancePlayback(
 
 Public domain functions throw an `Error` whose message starts with the function name and names the violated rule, for example `createRng: seed must be an integer from 0 to 4294967295, received -1`.
 
-| Function                   | Rejects                                                                                                                           |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `createRng`                | A seed that is not an integer from 0 to 4294967295                                                                                |
-| `randomInt`                | Bounds that are not safe integers, `min` greater than `max`, or a range of more than 2^32 integers                                |
-| `sampleWithoutReplacement` | A count that is not an integer from 0 to `items.length`                                                                           |
-| `simulateRound`            | A round without horses, a horse id missing from `horsesById`, or a distance that is not a positive multiple of `SEGMENT_LENGTH_M` |
-| `generateProgram`          | Fewer than `HORSES_PER_ROUND` horses, or two horses with the same id                                                              |
-| `advancePlayback`          | A negative or non-finite `deltaMs`, or a state whose round index is outside the program                                           |
+| Function                   | Rejects                                                                                                                                                             |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createRng`                | A seed that is not an integer from 0 to 4294967295                                                                                                                  |
+| `randomInt`                | Bounds that are not safe integers, `min` greater than `max`, or a range of more than 2^32 integers                                                                  |
+| `sampleWithoutReplacement` | A count that is not an integer from 0 to `items.length`                                                                                                             |
+| `simulateRound`            | A round without horses, a horse id missing from `horsesById`, or a distance that is not a positive multiple of `SEGMENT_LENGTH_M`                                   |
+| `generateProgram`          | Fewer than `HORSES_PER_ROUND` horses, or two horses with the same id                                                                                                |
+| `advancePlayback`          | A negative or non-finite `deltaMs`, a state with a negative or non-finite `elapsedMs` or a round index outside the program, or an intermission after the last round |
 
 ## 4. Race simulation
 
@@ -231,9 +231,9 @@ A uniform factor with spread `v` is computed as `1 + v * (2 * next() - 1)`, so a
 
 ### 4.2 Constants
 
-Initial values; the simulation constants are calibrated in HRG-23 against section 4.3.
+The simulation constants were calibrated in HRG-23 against section 4.3 and kept their initial values.
 
-| Constant                         | Initial value                                       | Purpose                                                  |
+| Constant                         | Value                                               | Purpose                                                  |
 | -------------------------------- | --------------------------------------------------- | -------------------------------------------------------- |
 | `HORSE_COUNT`                    | 20                                                  | Rule 1                                                   |
 | `HORSES_PER_ROUND`               | 10                                                  | Rule 5                                                   |
