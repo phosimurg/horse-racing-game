@@ -247,7 +247,9 @@ describe('[RES-01] dashboard results scrolling', () => {
         expect(scrollTo).toHaveBeenCalledTimes(1);
         expect(scrollTo.mock.contexts[0]).toBe(view.get('.results-list').element);
     });
+});
 
+describe('[RES-01] [RACE-05] dashboard results after a layout switch', () => {
     it('brings the newest lap back into view after the layout switches to narrow and back', async () => {
         const { view, media, frames, race } = mountView();
         await activate(view, 'Generate Program');
@@ -267,6 +269,7 @@ describe('[RES-01] dashboard results scrolling', () => {
 
         expect(scrollTo).toHaveBeenCalledTimes(1);
         expect(scrollTo.mock.contexts[0]).toBe(view.get('.results-list').element);
+        expect(scrollTo.mock.calls[0]?.[0]).toMatchObject({ behavior: 'instant' });
     });
 });
 
