@@ -27,6 +27,8 @@ const { rounds, horsesById, states } = defineProps<{
             v-else
             class="program-list"
             role="list"
+            aria-label="Program laps"
+            tabindex="0"
         >
             <li
                 v-for="(round, index) in rounds"

@@ -1,0 +1,60 @@
+import { expect, test } from './fixtures';
+
+test.describe('[NFR-06] production security', () => {
+    test('ships a Content Security Policy and makes no third-party requests @smoke', async ({
+        page,
+    }) => {
+        const origins = new Set<string>();
+        page.on('request', (request) => origins.add(new URL(request.url()).origin));
+
+        await page.goto('/');
+        await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+        await expect(page.locator('meta[http-equiv="Content-Security-Policy"]')).toHaveAttribute(
+            'content',
+            /default-src 'self'/
+        );
+        expect([...origins]).toEqual([new URL(page.url()).origin]);
+    });
+});
+
+test.describe('[NFR-04] runtime quality', () => {
+    test('moves the horses with transforms only', async ({ page }) => {
+        await page.clock.install();
+        await page.goto('/?seed=3');
+        await page.getByRole('button', { name: 'Generate Program' }).click();
+        await page.getByRole('button', { name: 'Start' }).click();
+        await page.clock.runFor(1000);
+
+        const runner = await page
+            .locator('#race-track svg')
+            .first()
+            .evaluate((element) => {
+                const style = getComputedStyle(element);
+                return { transform: style.transform, left: style.left };
+            });
+
+        expect(runner.transform).not.toBe('none');
+        expect(runner.left).toBe('0px');
+    });
+});
+
+test.describe('[NFR-05] performance budget', () => {
+    test('keeps the scripts and styles of the first load under 250 kB', async ({ page }) => {
+        await page.goto('/');
+        await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+
+        const bytes = await page.evaluate(() =>
+            performance
+                .getEntriesByType('resource')
+                .filter((entry) => /\.(js|css)$/.test(new URL(entry.name).pathname))
+                .reduce(
+                    (total, entry) => total + (entry as PerformanceResourceTiming).decodedBodySize,
+                    0
+                )
+        );
+
+        expect(bytes).toBeGreaterThan(0);
+        expect(bytes).toBeLessThan(250_000);
+    });
+});

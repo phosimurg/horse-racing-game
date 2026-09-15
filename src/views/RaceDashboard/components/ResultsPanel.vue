@@ -67,6 +67,8 @@ watch(
             ref="list"
             class="results-list"
             role="list"
+            aria-label="Results by lap"
+            tabindex="0"
         >
             <li
                 v-for="result in results"

@@ -10,6 +10,7 @@ const { laps } = defineProps<{ laps: readonly LapStep[] }>();
         class="lap-stepper"
         role="list"
         aria-label="Laps"
+        tabindex="0"
     >
         <li
             v-for="lap in laps"

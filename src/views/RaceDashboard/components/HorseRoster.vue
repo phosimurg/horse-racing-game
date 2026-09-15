@@ -22,7 +22,12 @@ const COLUMNS = [
         <template #actions>
             <span class="horse-roster-count">{{ horses.length }} horses</span>
         </template>
-        <div class="horse-roster-scroll">
+        <div
+            class="horse-roster-scroll"
+            role="region"
+            aria-label="Horse list table"
+            tabindex="0"
+        >
             <BaseTable
                 caption="Horses with their condition and silk color"
                 caption-hidden
