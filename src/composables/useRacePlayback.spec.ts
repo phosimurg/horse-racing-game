@@ -206,3 +206,24 @@ describe('[RES-02] useRacePlayback at the finish', () => {
         expect(playback.leaderId.value).toBeNull();
     });
 });
+
+describe('[RACE-03] useRacePlayback pause during an intermission', () => {
+    it('freezes the intermission and continues with the next round after resuming', () => {
+        const { race, frames, playback } = setup();
+        race.start();
+        runUntil(frames, () => race.results.length === 1);
+
+        race.pause();
+        frames.frame(1_000_000);
+
+        expect(frames.pendingCount()).toBe(0);
+        expect(playback.phase.value).toBe('intermission');
+        expect(race.results).toHaveLength(1);
+
+        race.start();
+        runUntil(frames, () => playback.phase.value === 'racing');
+
+        expect(playback.activeRound.value).toBe(race.program?.rounds[1]);
+        expect(race.results).toHaveLength(1);
+    });
+});

@@ -40,17 +40,19 @@ describe('[NFR-01] useAnnouncer', () => {
         expect(message.value).toBe('Race paused.');
     });
 
-    it('replaces a pending message with a newer one', () => {
+    it('joins messages that arrive before the live region updates', () => {
         const { message, announce } = setup();
 
-        announce('Race paused.');
+        announce('Lap 6 finished. Winner: Ada Lovelace.');
         vi.advanceTimersByTime(ANNOUNCE_DELAY_MS - 1);
-        announce('Race resumed.');
+        announce('Race finished. All 6 laps complete.');
         vi.advanceTimersByTime(ANNOUNCE_DELAY_MS - 1);
 
         expect(message.value).toBe('');
         vi.advanceTimersByTime(1);
-        expect(message.value).toBe('Race resumed.');
+        expect(message.value).toBe(
+            'Lap 6 finished. Winner: Ada Lovelace. Race finished. All 6 laps complete.'
+        );
     });
 
     it('drops a pending message when its scope is disposed', () => {

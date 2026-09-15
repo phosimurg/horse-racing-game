@@ -5,13 +5,16 @@ export const ANNOUNCE_DELAY_MS = 100;
 
 export function useAnnouncer() {
     const message = shallowRef('');
+    let pendingText = '';
     let pendingTimer: ReturnType<typeof setTimeout> | undefined;
 
     function announce(text: string): void {
         clearTimeout(pendingTimer);
+        pendingText = pendingText ? `${pendingText} ${text}` : text;
         message.value = '';
         pendingTimer = setTimeout(() => {
-            message.value = text;
+            message.value = pendingText;
+            pendingText = '';
         }, ANNOUNCE_DELAY_MS);
     }
 

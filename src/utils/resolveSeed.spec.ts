@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { resolveSeed } from './resolveSeed';
 
@@ -21,9 +21,16 @@ describe('[NFR-03] resolveSeed', () => {
         }
     );
 
-    it('draws the default fallback as a uint32 from the platform generator', () => {
-        const seed = resolveSeed('');
+    it('draws the default fallback from crypto.getRandomValues as an unsigned 32-bit number', () => {
+        vi.spyOn(globalThis.crypto, 'getRandomValues').mockImplementation(
+            <T extends ArrayBufferView | null>(array: T): T => {
+                if (array instanceof Uint32Array) {
+                    array[0] = 3_000_000_000;
+                }
+                return array;
+            }
+        );
 
-        expect(Number.isInteger(seed) && seed >= 0 && seed <= 4294967295).toBe(true);
+        expect(resolveSeed('')).toBe(3_000_000_000);
     });
 });
