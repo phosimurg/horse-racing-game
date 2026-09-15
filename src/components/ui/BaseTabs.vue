@@ -104,8 +104,12 @@ function onKeydown(event: KeyboardEvent, index: number): void {
     border-radius: var(--radius-pill);
 }
 
+/* The underline marks the selected tab without relying on the fill color. */
 .base-tabs-tab[aria-selected='true'] {
     color: var(--color-accent-ink);
+    text-decoration-line: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.3em;
     background: var(--color-accent);
 }
 
@@ -113,5 +117,13 @@ function onKeydown(event: KeyboardEvent, index: number): void {
 .base-tabs-panel:focus-visible {
     outline: 3px solid var(--color-focus);
     outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+    .base-tabs-tab[aria-selected='true'] {
+        color: HighlightText;
+        forced-color-adjust: none;
+        background: Highlight;
+    }
 }
 </style>

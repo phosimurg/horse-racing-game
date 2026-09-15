@@ -67,7 +67,8 @@ const { laps } = defineProps<{ laps: readonly LapStep[] }>();
     justify-content: end;
 }
 
-@media (width < 768px) {
+/* Below 1280 px the brand and actions leave the lap stepper no room, so it takes its own row. */
+@media (width < 1280px) {
     .app-bar {
         grid-template-columns: minmax(0, 1fr) auto;
     }

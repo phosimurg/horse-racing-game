@@ -33,18 +33,20 @@ test.describe('[NFR-04] runtime quality', () => {
         await page.goto('/?seed=3');
         await page.getByRole('button', { name: 'Generate Program' }).click();
         await page.getByRole('button', { name: 'Start' }).click();
+        const runner = page.locator('#race-track svg').first();
+        const placement = () =>
+            runner.evaluate((element) => ({
+                x: element.getBoundingClientRect().x,
+                left: getComputedStyle(element).left,
+            }));
+
+        await page.clock.runFor(500);
+        const early = await placement();
         await page.clock.runFor(1000);
+        const later = await placement();
 
-        const runner = await page
-            .locator('#race-track svg')
-            .first()
-            .evaluate((element) => {
-                const style = getComputedStyle(element);
-                return { transform: style.transform, left: style.left };
-            });
-
-        expect(runner.transform).not.toBe('none');
-        expect(runner.left).toBe('0px');
+        expect(later.x).toBeGreaterThan(early.x);
+        expect([early.left, later.left]).toEqual(['0px', '0px']);
     });
 });
 

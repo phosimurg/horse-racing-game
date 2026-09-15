@@ -35,7 +35,8 @@
 
 @layer base {
     html {
-        scroll-padding-block-end: 6rem;
+        /* Clears the sticky bottom bar, which grows to two rows when its buttons wrap. */
+        scroll-padding-block-end: 8rem;
     }
 
     body {
