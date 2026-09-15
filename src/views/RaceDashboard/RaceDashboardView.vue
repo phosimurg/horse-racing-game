@@ -158,6 +158,7 @@ watch(
                     :results="race.results"
                     :horses-by-id="horsesStore.horsesById"
                     :has-program="race.program !== null"
+                    :visible="activeTab === 'results'"
                 />
             </template>
         </BaseTabs>

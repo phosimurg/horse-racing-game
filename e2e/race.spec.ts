@@ -1,3 +1,5 @@
+import { setTimeout as delay } from 'node:timers/promises';
+
 import type { Page } from '@playwright/test';
 
 import { expect, test } from './fixtures';
@@ -124,5 +126,78 @@ test.describe('[RACE-05] viewport changes during a round', () => {
         await expect(
             page.getByRole('tabpanel', { name: 'Results' }).getByRole('table')
         ).toHaveCount(6);
+    });
+});
+
+// Distance between each runner's rendered position and the position its progress calls for.
+async function runnerOffsets(page: Page): Promise<number[]> {
+    return page.locator('#race-track svg').evaluateAll((runners) =>
+        runners.map((runner) => {
+            const strip = (runner.parentElement ?? runner).getBoundingClientRect();
+            const box = runner.getBoundingClientRect();
+            const progress = Number(getComputedStyle(runner).getPropertyValue('--progress'));
+            return box.left - strip.left - progress * (strip.width - box.width);
+        })
+    );
+}
+
+test.describe('[RACE-02] horse positions', () => {
+    test('keeps every galloping horse where its progress places it', async ({ page }) => {
+        const clockStart = Date.parse('2026-09-15T12:00:00Z');
+        await page.clock.install({ time: clockStart });
+        await page.goto(`/?seed=${SEED}`);
+        // A paused clock freezes progress while the CSS gallop keeps running in real time.
+        await page.clock.pauseAt(clockStart + 60_000);
+        await page.getByRole('button', { name: 'Generate Program' }).click();
+        await page.getByRole('button', { name: 'Start' }).click();
+        await page.clock.runFor(2000);
+
+        const offsets: number[] = [];
+        for (let sample = 0; sample < 6; sample += 1) {
+            offsets.push(...(await runnerOffsets(page)));
+            await delay(60);
+        }
+
+        expect(offsets).toHaveLength(60);
+        expect(Math.max(...offsets.map((offset) => Math.abs(offset)))).toBeLessThanOrEqual(1);
+    });
+});
+
+test.describe('[RES-01] results scrolling', () => {
+    test.use({ viewport: { width: 1440, height: 900 } });
+
+    test('shows the newest lap inside the Results panel without scrolling the page', async ({
+        page,
+    }) => {
+        await openSeeded(page);
+        await page.getByRole('button', { name: 'Generate Program' }).click();
+        await page.getByRole('button', { name: 'Start' }).click();
+
+        const list = page.getByRole('list', { name: 'Results by lap' });
+        // Each poll advances the race by half a second until the third lap has finished.
+        await expect
+            .poll(
+                async () => {
+                    await page.clock.runFor(500);
+                    return list.getByRole('table').count();
+                },
+                { intervals: [50], timeout: 30_000 }
+            )
+            .toBe(3);
+
+        await expect
+            .poll(() =>
+                list.evaluate((element) => {
+                    const newest = element.lastElementChild?.getBoundingClientRect();
+                    const box = element.getBoundingClientRect();
+                    return (
+                        newest !== undefined &&
+                        newest.top >= box.top - 1 &&
+                        newest.bottom <= box.bottom + 1
+                    );
+                })
+            )
+            .toBe(true);
+        expect(await page.evaluate(() => window.scrollY)).toBe(0);
     });
 });

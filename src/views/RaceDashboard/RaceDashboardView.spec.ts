@@ -13,7 +13,8 @@ import { stubMatchMedia } from '@/test/matchMedia';
 
 import RaceDashboardView from './RaceDashboardView.vue';
 
-Element.prototype.scrollIntoView = vi.fn<() => void>();
+const scrollTo = vi.fn<(options?: ScrollToOptions) => void>();
+Element.prototype.scrollTo = scrollTo as unknown as Element['scrollTo'];
 
 let wrapper: VueWrapper | undefined;
 
@@ -154,7 +155,9 @@ describe('[RES-01] dashboard results', () => {
     it('shows the first lap results with podium markers and announces the winner', async () => {
         const { view, frames, race, horses } = mountView();
         await activate(view, 'Generate Program');
+        await announcement(view);
         await activate(view, 'Start');
+        await announcement(view);
 
         for (let frame = 0; frame < 200 && race.results.length === 0; frame += 1) {
             frames.frame(frame * 100);
@@ -168,7 +171,7 @@ describe('[RES-01] dashboard results', () => {
         expect(
             table.findAll('.tone-gold, .tone-silver, .tone-bronze').map((badge) => badge.text())
         ).toEqual(['1st', '2nd', '3rd']);
-        expect(await announcement(view)).toContain(`Lap 1 finished. Winner: ${winner?.name}.`);
+        expect(await announcement(view)).toBe(`Lap 1 finished. Winner: ${winner?.name}.`);
     });
 });
 
@@ -187,12 +190,82 @@ describe('[UX-03] dashboard narrow layout', () => {
 });
 
 describe('[UX-02] dashboard theme', () => {
-    it('switches the document theme from the toggle', async () => {
-        mountView();
-        const before = document.documentElement.dataset.theme;
+    it('switches the document from the light system theme to dark from the toggle', async () => {
+        const { view } = mountView();
+        expect(document.documentElement.dataset.theme).toBe('light');
 
-        await activate(wrapper as VueWrapper, 'Dark theme');
+        await activate(view, 'Dark theme');
 
-        expect(document.documentElement.dataset.theme).not.toBe(before);
+        expect(document.documentElement.dataset.theme).toBe('dark');
+        expect(button(view, 'Dark theme').attributes('aria-pressed')).toBe('true');
+    });
+});
+
+describe('[RES-01] dashboard results scrolling', () => {
+    it('scrolls the results list, not the page, when a lap finishes', async () => {
+        const { view, frames, race } = mountView();
+        await activate(view, 'Generate Program');
+        await activate(view, 'Start');
+        scrollTo.mockClear();
+
+        for (let frame = 0; frame < 200 && race.results.length === 0; frame += 1) {
+            frames.frame(frame * 100);
+        }
+        await nextTick();
+        await nextTick();
+
+        expect(scrollTo).toHaveBeenCalledTimes(1);
+        expect(scrollTo.mock.contexts[0]).toBe(view.get('.results-list').element);
+    });
+
+    it('waits for the Results tab to open on a narrow screen before scrolling', async () => {
+        const { view, frames, race } = mountView({ narrow: true });
+        await activate(view, 'Generate Program');
+        await activate(view, 'Start');
+        scrollTo.mockClear();
+        for (let frame = 0; frame < 200 && race.results.length === 0; frame += 1) {
+            frames.frame(frame * 100);
+        }
+        await nextTick();
+        await nextTick();
+        const callsWhileHidden = scrollTo.mock.calls.length;
+
+        await view
+            .findAll('[role="tab"]')
+            .find((tab) => tab.text() === 'Results')
+            ?.trigger('click');
+        await nextTick();
+        await nextTick();
+
+        expect(callsWhileHidden).toBe(0);
+        expect(scrollTo).toHaveBeenCalledTimes(1);
+        expect(scrollTo.mock.contexts[0]).toBe(view.get('.results-list').element);
+    });
+});
+
+describe('[RACE-02] dashboard leader', () => {
+    it('names the horse furthest along the track as the leader', async () => {
+        const { view, frames } = mountView();
+        await activate(view, 'Generate Program');
+        expect(view.get('.race-track-leader').text()).toBe('At the start gate');
+
+        await activate(view, 'Start');
+        for (let time = 0; time <= 1500; time += 100) {
+            frames.frame(time);
+        }
+        await nextTick();
+
+        const lanes = view.findAll('.race-lane').map((lane) => ({
+            name: lane.get('.race-lane-name').text(),
+            progress: Number(
+                /--progress:\s*([\d.]+)/.exec(
+                    lane.get('.race-lane-runner').attributes('style') ?? ''
+                )?.[1]
+            ),
+        }));
+        const furthest = lanes.reduce((best, lane) =>
+            lane.progress > best.progress ? lane : best
+        );
+        expect(view.get('.race-track-leader').text()).toBe(`Leader: ${furthest.name}`);
     });
 });

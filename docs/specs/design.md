@@ -80,7 +80,7 @@ src/
     index.ts              public API
   stores/                 horses.ts, race.ts
   composables/            useRng, useAnimationFrame, useRacePlayback, useTheme, useMediaQuery, useAnnouncer
-  components/ui/          BaseButton, BaseCard, BaseTable, BaseTabs, BaseBadge, SkipLink, LiveAnnouncer
+  components/ui/          BaseButton, BaseCard, BaseTable, BaseTabs, BaseBadge, BaseIcon, SkipLink, LiveAnnouncer
   components/common/      HorseRunner, SilkChip, ConditionMeter, RoundCard, ThemeToggle
   views/RaceDashboard/    RaceDashboardView.vue, components/ (AppBar, LapStepper, RaceControls, HorseRoster, RaceTrack, RaceLane, ProgramPanel, ResultsPanel, MobileActionBar)
   utils/                  formatLapTitle, contrastRatio, readableTextColor, resolveSeed

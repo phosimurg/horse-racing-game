@@ -90,9 +90,10 @@ const bibInk = computed(() => readableTextColor(color.hex));
     }
 }
 
+/* The translate property adds to the lane's positioning transform instead of replacing it. */
 @keyframes gallop {
     to {
-        transform: translateY(-2px);
+        translate: 0 -2px;
     }
 }
 </style>

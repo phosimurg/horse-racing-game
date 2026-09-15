@@ -38,7 +38,7 @@ const runnerStyle = computed(() => ({ '--progress': progress }));
 <style scoped>
 .race-lane {
     display: grid;
-    grid-template-columns: 1.5rem minmax(0, 8rem) minmax(0, 1fr);
+    grid-template-columns: 1.5rem minmax(0, min(8rem, 30%)) minmax(0, 1fr);
     gap: var(--space-2);
     align-items: center;
     min-block-size: 2.75rem;

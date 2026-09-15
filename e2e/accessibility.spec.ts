@@ -57,3 +57,56 @@ test.describe('[NFR-01] keyboard access', () => {
         await expect(page.locator('#race-track')).toBeFocused();
     });
 });
+
+test.describe('[NFR-01] selected tab', () => {
+    test.use({ viewport: { width: 390, height: 844 }, colorScheme: 'light' });
+
+    test('marks the selected tab with an underline and a forced-colors highlight', async ({
+        page,
+    }) => {
+        await page.goto('/?seed=7');
+
+        await expect(page.getByRole('tab', { selected: true })).toHaveCSS(
+            'text-decoration-line',
+            'underline'
+        );
+        await expect(page.getByRole('tab', { selected: false }).first()).toHaveCSS(
+            'text-decoration-line',
+            'none'
+        );
+
+        await page.emulateMedia({ forcedColors: 'active' });
+        const backgrounds = await page.getByRole('tablist').evaluate((list) => ({
+            list: getComputedStyle(list).backgroundColor,
+            selected: getComputedStyle(list.querySelector('[aria-selected="true"]') ?? list)
+                .backgroundColor,
+        }));
+        expect(backgrounds.selected).not.toBe(backgrounds.list);
+    });
+});
+
+test.describe('[NFR-01] reduced motion', () => {
+    test.use({ reducedMotion: 'reduce' });
+
+    test('moves the horses without running any animation', async ({ page }) => {
+        await page.clock.install();
+        await page.goto('/?seed=7');
+        await page.getByRole('button', { name: 'Generate Program' }).click();
+        await page.getByRole('button', { name: 'Start' }).click();
+        await page.clock.runFor(1000);
+
+        const state = await page.evaluate(() => ({
+            progress: Number(
+                getComputedStyle(
+                    document.querySelector('#race-track svg') ?? document.body
+                ).getPropertyValue('--progress')
+            ),
+            running: document
+                .getAnimations()
+                .filter((animation) => animation.playState === 'running').length,
+        }));
+
+        expect(state.progress).toBeGreaterThan(0);
+        expect(state.running).toBe(0);
+    });
+});

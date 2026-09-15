@@ -34,6 +34,27 @@ test.describe('[UX-03] narrow layout', () => {
 
         expect(await emptySpaceBelowContent(page)).toBeLessThanOrEqual(1);
     });
+
+    test('keeps the scroll padding clear of the bottom bar when its buttons wrap', async ({
+        page,
+    }) => {
+        await page.goto('/?seed=1');
+        await page.getByRole('button', { name: 'Generate Program' }).click();
+        await page.getByRole('button', { name: 'Start' }).click();
+        await page.getByRole('button', { name: 'Pause' }).click();
+        await expect(page.getByRole('button', { name: 'Resume' })).toBeVisible();
+
+        const space = await page.evaluate(() => ({
+            padding: Number.parseFloat(
+                getComputedStyle(document.documentElement).scrollPaddingBlockEnd
+            ),
+            bar:
+                document.querySelector('.mobile-action-bar')?.getBoundingClientRect().height ??
+                Number.POSITIVE_INFINITY,
+        }));
+
+        expect(space.padding).toBeGreaterThanOrEqual(space.bar);
+    });
 });
 
 test.describe('Wide layout', () => {
@@ -76,4 +97,27 @@ test.describe('[NFR-02] reflow and targets', () => {
             true,
         ]);
     });
+});
+
+test.describe('Tablet layout', () => {
+    for (const viewport of [
+        { width: 768, height: 1024 },
+        { width: 1024, height: 768 },
+    ]) {
+        test(`shows all six laps in the lap stepper at ${viewport.width} pixels`, async ({
+            page,
+        }) => {
+            await page.setViewportSize(viewport);
+            await page.goto('/?seed=1');
+            await page.getByRole('button', { name: 'Generate Program' }).click();
+
+            const laps = page
+                .getByRole('list', { name: 'Laps', exact: true })
+                .getByRole('listitem');
+            await expect(laps).toHaveCount(6);
+            for (const lap of await laps.all()) {
+                await expect(lap).toBeInViewport({ ratio: 1 });
+            }
+        });
+    }
 });

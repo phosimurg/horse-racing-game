@@ -212,6 +212,26 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
    - Issue: `clock.install()` keeps the fake clock flowing, so the horses stopped a few pixels apart between runs.
    - Caught by: the Visual regression job on PR #5, where only the horse sprites differed from the baselines.
    - Resolution: the spec pauses the clock after load so that `runFor` alone moves the race; the regenerated baselines passed three repeated runs.
+8. **The gallop animation sent racing horses back toward the start line.**
+   - Issue: the gallop keyframes animated `transform`, which replaced the lane's `translateX`, so every horse slid between its position and the start line every 0.3 seconds.
+   - Caught by: the Phase 4 review, then confirmed in the browser, where runners drifted up to 113 px from their positions. The visual tests pause first, and the NFR-04 test accepted any transform.
+   - Resolution: the gallop animates the `translate` property. An end-to-end test samples every runner against its progress while the gallop runs, and the NFR-04 test compares rendered positions.
+9. **The results list scrolled the whole page.**
+   - Issue: `scrollIntoView` scrolls every scrollable ancestor, so the page jumped 320 px when a lap finished, and a hidden Results tab never caught up.
+   - Caught by: the Phase 4 review, then confirmed in the browser.
+   - Resolution: the panel scrolls only its list, and again when the Results tab opens, with view and end-to-end tests.
+10. **Some states relied on color alone or had no room.**
+    - Issue: the selected tab was a 1.27:1 lime fill in the light theme and invisible in forced colors, the live lap differed from finished laps only by bar color, the lap stepper was 0 px wide at 768 px, horses could travel 40 px at 320 px, and the paused bottom bar (121 px) was taller than the scroll padding (96 px).
+    - Caught by: the Phase 4 review, then measured in the browser.
+    - Resolution: an underline and a forced-colors highlight for the selected tab, a thicker live lap bar, a separate lap stepper row below 1280 px, a capped lane name column and 8rem of scroll padding, with layout and accessibility tests.
+11. **Several tests could not fail.**
+    - Issue: the theme test accepted any change, the winner announcement used `toContain`, and neither the leader text nor reduced motion was tested.
+    - Caught by: the Phase 4 review.
+    - Resolution: exact assertions, with earlier announcements flushed first, and new tests for the leader and reduced motion.
+
+### Dependencies
+
+- `npm view @fontsource-variable/archivo@5.3.0` (2026-09-15): version 5.3.0, license OFL-1.1, no peer dependencies and no engine constraints.
 
 ### Environment
 

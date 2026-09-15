@@ -63,13 +63,13 @@ Branch `feat/state`.
 
 Branch `feat/design-system`.
 
-| ID     | Task                                                                                  | Requirements                           | Tests                                          | Status |
-| ------ | ------------------------------------------------------------------------------------- | -------------------------------------- | ---------------------------------------------- | ------ |
-| HRG-40 | Design approval from desktop and mobile screenshots of the running app (no canvas)    | UX-01, UX-02, UX-03, NFR-01            | Owner approval                                 | [ ]    |
-| HRG-41 | Tokens, cascade layers, fonts and textures                                            | NFR-01, NFR-05, NFR-06                 | Stylelint; contrast unit tests                 | [x]    |
-| HRG-42 | UI kit: BaseButton, BaseCard, BaseTable, BaseTabs, BaseBadge, SkipLink, LiveAnnouncer | NFR-01, NFR-02                         | `src/components/ui/*.spec.ts`                  | [x]    |
-| HRG-43 | Common components: HorseRunner, SilkChip, ConditionMeter, RoundCard, ThemeToggle      | HORSE-02, RES-01, UX-02, NFR-01        | `src/components/common/*.spec.ts`              | [x]    |
-| HRG-44 | Dashboard view components                                                             | PROG-04, RACE-02, RES-01, UX-01, UX-03 | `src/views/RaceDashboard/components/*.spec.ts` | [x]    |
+| ID     | Task                                                                                  | Requirements                           | Tests                                               | Status |
+| ------ | ------------------------------------------------------------------------------------- | -------------------------------------- | --------------------------------------------------- | ------ |
+| HRG-40 | Design approval from desktop and mobile screenshots of the running app (no canvas)    | UX-01, UX-02, UX-03, NFR-01            | Owner approval                                      | [ ]    |
+| HRG-41 | Tokens, cascade layers, fonts and textures                                            | NFR-01, NFR-05, NFR-06                 | Stylelint; contrast unit tests                      | [x]    |
+| HRG-42 | UI kit: BaseButton, BaseCard, BaseTable, BaseTabs, BaseBadge, SkipLink, LiveAnnouncer | NFR-01, NFR-02                         | `src/components/ui/*.spec.ts`                       | [x]    |
+| HRG-43 | Common components: HorseRunner, SilkChip, ConditionMeter, RoundCard, ThemeToggle      | HORSE-02, RES-01, UX-02, NFR-01        | `src/components/common/*.spec.ts`                   | [x]    |
+| HRG-44 | Dashboard view components                                                             | PROG-04, RACE-02, RES-01, UX-01, UX-03 | `src/views/RaceDashboard/RaceDashboardView.spec.ts` | [x]    |
 
 ## Phase 4b: Wiring and behavior
 

@@ -8,10 +8,16 @@ import BaseTable from '@/components/ui/BaseTable.vue';
 import type { Horse, HorseId, RoundResult } from '@/domain';
 import { formatLapTitle } from '@/utils/formatLapTitle';
 
-const { results, horsesById, hasProgram } = defineProps<{
+const {
+    results,
+    horsesById,
+    hasProgram,
+    visible = true,
+} = defineProps<{
     results: readonly RoundResult[];
     horsesById: ReadonlyMap<HorseId, Horse>;
     hasProgram: boolean;
+    visible?: boolean;
 }>();
 
 const COLUMNS = [
@@ -35,13 +41,23 @@ function rowsOf(result: RoundResult) {
     }));
 }
 
-// RES-01: bring the newest lap into view inside the panel.
+// RES-01: bring the newest lap into view inside the panel. scrollIntoView would scroll the page too.
+function scrollToNewestLap(): void {
+    const newest = list.value?.lastElementChild;
+    if (!list.value || !newest) {
+        return;
+    }
+    const offset = newest.getBoundingClientRect().top - list.value.getBoundingClientRect().top;
+    list.value.scrollTo({ top: list.value.scrollTop + offset });
+}
+
+// A hidden tab panel cannot scroll, so the list also catches up when it becomes visible.
 watch(
-    () => results.length,
-    async (length, previousLength) => {
-        if (length > previousLength) {
+    () => [results.length, visible] as const,
+    async ([length, isVisible], [previousLength, wasVisible]) => {
+        if (isVisible && (length > previousLength || !wasVisible)) {
             await nextTick();
-            list.value?.lastElementChild?.scrollIntoView({ block: 'nearest' });
+            scrollToNewestLap();
         }
     }
 );

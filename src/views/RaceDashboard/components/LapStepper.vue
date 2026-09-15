@@ -55,8 +55,10 @@ const { laps } = defineProps<{ laps: readonly LapStep[] }>();
     border-block-end-color: var(--color-text-muted);
 }
 
+/* A thicker bar marks the live lap without relying on color; the padding keeps the height. */
 .state-live {
+    padding-block-end: 0;
     color: var(--color-text);
-    border-block-end-color: var(--color-accent-border);
+    border-block-end: 7px solid var(--color-accent-border);
 }
 </style>
