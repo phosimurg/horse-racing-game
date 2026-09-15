@@ -9,7 +9,8 @@
 ## Verification
 
 - [ ] `npm run verify`
-- [ ] `npm run test:e2e`
+- [ ] `npm run test:e2e` (rendered app or `e2e/` changes only)
+- [ ] `npm run test:mutation` (`src/domain` changes only)
 - [ ] `npm run test:visual:docker` (interface changes only)
 - [ ] Screenshots attached (interface changes only)
 

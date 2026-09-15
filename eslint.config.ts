@@ -12,6 +12,11 @@ function layerImport(layers: string[], message: string) {
     return { regex: `^(@|\\.{1,2})/(.*/)?(${layers.join('|')})(/|$)`, message };
 }
 
+// esquery regexes cannot contain a literal slash, so \u002F stands for it.
+const TEST_HELPER_IMPORT = String.raw`^(@|\.{1,2})\u002F(.*\u002F)?test(\u002F|$)`;
+const MODULE_SOURCE_NODES =
+    ':matches(ImportDeclaration, ExportNamedDeclaration, ExportAllDeclaration, ImportExpression)';
+
 const DOM_GLOBALS = [
     'window',
     'document',
@@ -139,6 +144,23 @@ export default withVueTs(
                             'UI kit components must stay business-agnostic.'
                         ),
                     ],
+                },
+            ],
+        },
+    },
+
+    {
+        name: 'app/boundaries/test-helpers',
+        files: ['src/**/*.{ts,vue}'],
+        ignores: ['src/**/*.spec.ts', 'src/test/**'],
+        rules: {
+            // The only no-restricted-syntax block: add new selectors here, because a later block
+            // that sets this rule would replace these options.
+            'no-restricted-syntax': [
+                'error',
+                {
+                    selector: `${MODULE_SOURCE_NODES}[source.value=/${TEST_HELPER_IMPORT}/]`,
+                    message: 'Only spec files may import test helpers.',
                 },
             ],
         },
