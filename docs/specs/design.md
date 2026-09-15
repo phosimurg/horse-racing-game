@@ -189,23 +189,27 @@ declare function advancePlayback(
 - `generateHorses` returns 20 horses with ids 1 to 20, unique names, unique colors and integer conditions from 1 to 100, and consumes 60 draws.
 - `HORSE_NAMES` holds 40 unique, non-blank names; `SILK_COLORS` holds 20 colors with unique, non-blank names and unique lowercase `#rrggbb` hex values.
 - Every `SILK_COLORS` hex reaches a WCAG 2.2 contrast ratio of at least 4.5:1 against `#151515` or against `#f5f5f5`, so bib text at least that dark or that light stays readable.
-- `generateProgram` returns 6 rounds with distances from 1200 to 2200 in 200 m steps, 10 distinct horses per round and one simulation per round.
-- `generateProgram` throws when given fewer horses than a round needs.
+- `generateProgram` returns 6 rounds numbered 1 to 6 with distances from 1200 to 2200 in 200 m steps, 10 distinct horses per round and one simulation per round, whose `round` is that round.
+- `simulateRound` returns one run per horse in lane order, with `lane` equal to the horse's index in `horseIds` plus 1, and consumes `1 + distance / SEGMENT_LENGTH_M` draws per horse.
 - Every `checkpointsMs` list is strictly increasing and has `distance / SEGMENT_LENGTH_M` entries.
 - `durationMs` equals the largest finish time in its round.
-- `rankPlacements` assigns positions 1 to 10 exactly once, ordered by finish time, ties broken by lane.
-- `progressAt` is 0 at or before 0 ms, 1 at or after the finish time and non-decreasing in between.
+- `rankPlacements` assigns positions from 1 to the number of runs exactly once, ordered by finish time (the last checkpoint), ties broken by lane.
+- `progressAt` is 0 at or before 0 ms, 1 at or after the finish time and non-decreasing in between. It is linear within each segment, so it equals k / n at the kth of n checkpoints.
 - `advancePlayback` never loses or double-counts elapsed time across phase or round boundaries, and never reports a round twice.
+- `advancePlayback` reports completed rounds in order and changes nothing for a delta of 0. When the last round completes it returns `isFinished` with the state held at that round's `durationMs`; a finished state stays unchanged.
 
 ### 3.2 Input validation
 
 Public domain functions throw an `Error` whose message starts with the function name and names the violated rule, for example `createRng: seed must be an integer from 0 to 4294967295, received -1`.
 
-| Function                   | Rejects                                                                                            |
-| -------------------------- | -------------------------------------------------------------------------------------------------- |
-| `createRng`                | A seed that is not an integer from 0 to 4294967295                                                 |
-| `randomInt`                | Bounds that are not safe integers, `min` greater than `max`, or a range of more than 2^32 integers |
-| `sampleWithoutReplacement` | A count that is not an integer from 0 to `items.length`                                            |
+| Function                   | Rejects                                                                                                                           |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `createRng`                | A seed that is not an integer from 0 to 4294967295                                                                                |
+| `randomInt`                | Bounds that are not safe integers, `min` greater than `max`, or a range of more than 2^32 integers                                |
+| `sampleWithoutReplacement` | A count that is not an integer from 0 to `items.length`                                                                           |
+| `simulateRound`            | A round without horses, a horse id missing from `horsesById`, or a distance that is not a positive multiple of `SEGMENT_LENGTH_M` |
+| `generateProgram`          | Fewer than `HORSES_PER_ROUND` horses, or two horses with the same id                                                              |
+| `advancePlayback`          | A negative or non-finite `deltaMs`, or a state whose round index is outside the program                                           |
 
 ## 4. Race simulation
 
@@ -222,6 +226,8 @@ segmentMs          = SEGMENT_LENGTH_M / speed * 1000 / PLAYBACK_SPEED
 ```
 
 Jitter averages out over 12 to 22 segments, because its spread shrinks with the square root of the segment count, so it creates lead changes within a round without deciding it. A small `form` factor allows occasional upsets between closely matched horses while condition stays dominant (decision D7).
+
+A uniform factor with spread `v` is computed as `1 + v * (2 * next() - 1)`, so a draw of 0.5 gives exactly 1.
 
 ### 4.2 Constants
 
@@ -246,7 +252,7 @@ Initial values; the simulation constants are calibrated in HRG-23 against sectio
 
 ### 4.3 Calibration targets
 
-Measured with a seeded Monte Carlo test over at least 2000 head-to-head rounds at 1200 m. Assertion bounds are at least 5 standard errors wide, so reordering random draws cannot flip the result.
+Measured with a seeded Monte Carlo test over at least 2000 head-to-head rounds at 1200 m. For each gap, the lower condition cycles through every value that keeps both horses within 1 to 100, and the better horse alternates between lanes 1 and 2. Each observed win rate must sit at least 5 standard errors, computed from the observed rate and the round count, inside every finite bound of its band, so reordering random draws cannot flip the result.
 
 | Condition gap     | Win rate of the better horse |
 | ----------------- | ---------------------------- |
@@ -254,7 +260,7 @@ Measured with a seeded Monte Carlo test over at least 2000 head-to-head rounds a
 | 20 points         | At least 93%                 |
 | 30 points or more | At least 99%                 |
 
-Playback targets: winners finish in about 4 to 6 s at 1200 m and 7 to 10 s at 2200 m.
+Playback targets: winners finish in about 4 to 6 s at 1200 m and 7 to 10 s at 2200 m. Without randomness (every draw 0.5), horses with conditions 1 and 100 both finish inside those windows.
 
 ### 4.4 Determinism
 
@@ -262,6 +268,8 @@ Playback targets: winners finish in about 4 to 6 s at 1200 m and 7 to 10 s at 22
 - `randomInt(min, max, rng)` returns `min + floor(next() * (max - min + 1))`. A draw has 2^32 possible values, so ranges of more than 2^32 integers are rejected; results are exactly uniform only when the range size is a power of two.
 - `sampleWithoutReplacement(items, count, rng)` selects and removes: each draw removes the entry at `randomInt(0, remaining.length - 1, rng)` from `remaining`, a copy of the entries not drawn yet, and appends it to the sample.
 - `generateHorses(rng)` samples 20 names from `HORSE_NAMES`, then all 20 `SILK_COLORS`, both with `sampleWithoutReplacement`, then draws one condition per horse in id order with `randomInt(CONDITION_MIN, CONDITION_MAX, rng)`. Horse n gets the nth sampled name and color.
+- `simulateRound(round, horsesById, rng)` draws, for each horse in lane order, its form and then one jitter per segment.
+- `generateProgram(horses, rng)` draws the lineups of all six rounds first, each with `sampleWithoutReplacement(horses, HORSES_PER_ROUND, rng)` so that draw order gives lanes 1 to 10, and then simulates the rounds in order.
 - Randomness is consumed in a fixed order and only at generation time: a roster at load, then a new roster, the rounds and all six simulations on each Generate Program. Playback consumes none, so pausing, frame rate and tab visibility cannot change results.
 - `resolveSeed` accepts a decimal uint32 from `?seed=`; anything else falls back to `crypto.getRandomValues`.
 
@@ -325,7 +333,7 @@ Frame algorithm while `status === 'running'`:
 
 On pause, finish or unmount the frame is cancelled and `lastTimestamp` is cleared. A new program resets the state to round 0, racing, 0 ms.
 
-Round timeline: racing from 0 ms to `durationMs` (the last horse finishes and the result is published), then intermission for `INTERMISSION_MS`, then the next round starts. Leftover time carries across each boundary.
+Round timeline: racing from 0 ms to `durationMs` (the last horse finishes and the result is published), then intermission for `INTERMISSION_MS`, then the next round starts. Leftover time carries across each boundary. A phase ends when its elapsed time reaches its duration, and the last round has no intermission.
 
 ### 5.3 RNG injection
 
