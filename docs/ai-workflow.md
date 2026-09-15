@@ -154,6 +154,19 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
    - Issue: after the range cap, the design said every integer in a range is equally likely, but splitting 2^32 draw values is exact only for power-of-two range sizes.
    - Caught by: the reviewer agent, which counted the draw values that map to each result.
    - Resolution: sections 3.1 and 4.4 state the limit; the game's ranges hold at most 100 integers, where the skew is one draw value in 2^32.
+6. **Stryker ran no tests.**
+   - Issue: the Stryker config set `vitest.dir`, and Vitest resolves `include` globs against that directory, so no spec matched; the warning pointed at related mode instead.
+   - Caught by: Stryker stopping with "No tests were executed", then `vitest run --dir src/domain/random` reproducing it.
+   - Resolution: `vitest.dir` stays unset with a comment; a baseline killed all 173 mutants in the random and horse modules.
+7. **A stopped agent had already written files.**
+   - Issue: a test-author run reported as failed on the spend limit had written three spec files before it stopped.
+   - Caught by: the next run, which found the untracked files and checked them against the design before keeping them.
+
+### Loop changes (2026-09-15)
+
+- The per-task subagent loop was too slow: one batched test-author run took about an hour, reviews took 10 to 15 minutes, and the monthly spend limit stopped the work twice.
+- The author first batched HRG-22 to HRG-24 into one test-author run, then switched to fast mode: tests and code are written in the main session, the code-reviewer runs once per phase, e2e runs only when the rendered app changes, and pushes need no confirmation once the gates pass.
+- Stryker moved ahead of the remaining domain tasks, and HRG-23 ran before HRG-22 because generateProgram calls simulateRound.
 
 ### Environment
 
@@ -173,3 +186,5 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
 | HRG-10 to HRG-19 | Version and engine research, configuration drafts, crash diagnosis                                                              | Node upgrade to 22.23.2, local Docker use, GitHub Pages and the preview entry                                   | Phase 1 items 1 to 8        | Dependency changes use npm 11 (`AGENTS.md`)          |
 | HRG-20           | Tests from design sections 3.1, 3.2 and 4.4 (test-author), mulberry32 reference values derived two ways, implementation, review | Phase 2 exit criteria and the Stryker installation; the design additions await review in the phase pull request | Phase 2 items 1, 2, 4 and 5 | Test helpers stay in spec files (`eslint.config.ts`) |
 | HRG-21           | Tests from design sections 3.1, 4.2 and 4.4 (test-author), palette contrast and distinctness checks, implementation, review     | The name pool theme and the palette await review in the phase pull request                                      | Phase 2 item 3              | None                                                 |
+| HRG-22 to HRG-24 | Batched tests (one test-author run on Sonnet 5), implementation, calibration check                                              | Batching, the Sonnet test-author, pushes without confirmation, then fast mode                                   | Phase 2 items 6 and 7       | Fast mode (`AGENTS.md`)                              |
+| HRG-25           | Stryker setup, baseline and mutation workflow                                                                                   | Stryker ahead of the remaining domain tasks                                                                     | Phase 2 item 6              | `vitest.dir` stays unset (`stryker.config.mjs`)      |
