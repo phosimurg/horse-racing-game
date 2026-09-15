@@ -28,7 +28,7 @@
     "test:visual": "playwright test --project=visual",
     "test:visual:docker": "docker run --rm --init --ipc=host -e HUSKY=0 -v \"$PWD\":/work -v horse-racing-game-node-modules:/work/node_modules -w /work mcr.microsoft.com/playwright:v1.63.0-noble /bin/bash -c \"npm ci && npm run test:visual\"",
     "test:visual:update": "docker run --rm --init --ipc=host -e HUSKY=0 -v \"$PWD\":/work -v horse-racing-game-node-modules:/work/node_modules -w /work mcr.microsoft.com/playwright:v1.63.0-noble /bin/bash -c \"npm ci && npm run test:visual -- --update-snapshots\"",
-    "traceability": "node scripts/check-traceability.mjs",
+    "traceability": "node scripts/check-traceability.mjs --enforce",
     "verify": "run-s lint format:check type-check test:coverage build-only traceability",
     "prepare": "husky"
   },

@@ -65,7 +65,7 @@ Branch `feat/design-system`.
 
 | ID     | Task                                                                                  | Requirements                           | Tests                                          | Status |
 | ------ | ------------------------------------------------------------------------------------- | -------------------------------------- | ---------------------------------------------- | ------ |
-| HRG-40 | Design approval from desktop and mobile screenshots of the running app (no canvas)    | UX-01, UX-02, UX-03, NFR-01            | Owner approval                                 | [x]    |
+| HRG-40 | Design approval from desktop and mobile screenshots of the running app (no canvas)    | UX-01, UX-02, UX-03, NFR-01            | Owner approval                                 | [ ]    |
 | HRG-41 | Tokens, cascade layers, fonts and textures                                            | NFR-01, NFR-05, NFR-06                 | Stylelint; contrast unit tests                 | [x]    |
 | HRG-42 | UI kit: BaseButton, BaseCard, BaseTable, BaseTabs, BaseBadge, SkipLink, LiveAnnouncer | NFR-01, NFR-02                         | `src/components/ui/*.spec.ts`                  | [x]    |
 | HRG-43 | Common components: HorseRunner, SilkChip, ConditionMeter, RoundCard, ThemeToggle      | HORSE-02, RES-01, UX-02, NFR-01        | `src/components/common/*.spec.ts`              | [x]    |
@@ -77,11 +77,11 @@ Branch `feat/race-dashboard`.
 
 | ID     | Task                                                        | Requirements                                                                       | Tests                       | Status |
 | ------ | ----------------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------- | ------ |
-| HRG-50 | End-to-end behavior specs, written failing first            | HORSE-04, PROG-01 to PROG-04, RACE-01 to RACE-05, RES-01, RES-02, CTRL-01, CTRL-02 | `e2e/*.spec.ts`             | [ ]    |
-| HRG-51 | View wiring and responsive layout                           | RACE-02, UX-03                                                                     | `e2e/layout.spec.ts`        | [ ]    |
-| HRG-52 | Accessibility: keyboard flow, axe, reduced motion, themes   | NFR-01, NFR-02, UX-02                                                              | `e2e/accessibility.spec.ts` | [ ]    |
+| HRG-50 | End-to-end behavior specs, written failing first            | HORSE-04, PROG-01 to PROG-04, RACE-01 to RACE-05, RES-01, RES-02, CTRL-01, CTRL-02 | `e2e/*.spec.ts`             | [x]    |
+| HRG-51 | View wiring and responsive layout                           | RACE-02, UX-03                                                                     | `e2e/layout.spec.ts`        | [x]    |
+| HRG-52 | Accessibility: keyboard flow, axe, reduced motion, themes   | NFR-01, NFR-02, UX-02                                                              | `e2e/accessibility.spec.ts` | [x]    |
 | HRG-53 | Production hardening: CSP, metadata, favicon, error handler | NFR-04, NFR-06                                                                     | `e2e/production.spec.ts`    | [ ]    |
-| HRG-54 | Traceability check switched to enforcing                    | All                                                                                | `npm run verify`            | [ ]    |
+| HRG-54 | Traceability check switched to enforcing                    | All                                                                                | `npm run verify`            | [x]    |
 
 ## Phase 5: Visual regression
 
