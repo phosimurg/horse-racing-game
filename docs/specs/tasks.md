@@ -87,10 +87,10 @@ Branch `feat/race-dashboard`.
 
 Branch `test/visual-regression`.
 
-| ID     | Task                                              | Requirements                         | Tests                  | Status |
-| ------ | ------------------------------------------------- | ------------------------------------ | ---------------------- | ------ |
-| HRG-60 | Visual specs and 10 baselines                     | RACE-02, RES-01, UX-01, UX-02, UX-03 | `e2e/visual/*.spec.ts` | [ ]    |
-| HRG-61 | Visual CI hardening and baseline update procedure |                                      | CI visual job          | [ ]    |
+| ID     | Task                                              | Requirements                                                   | Tests                  | Status |
+| ------ | ------------------------------------------------- | -------------------------------------------------------------- | ---------------------- | ------ |
+| HRG-60 | Visual specs and 10 baselines                     | PROG-04, RACE-02, RACE-05, RES-01, RES-02, UX-01, UX-02, UX-03 | `e2e/visual/*.spec.ts` | [x]    |
+| HRG-61 | Visual CI hardening and baseline update procedure |                                                                | CI visual job          | [x]    |
 
 ## Phase 6: Documentation and delivery
 

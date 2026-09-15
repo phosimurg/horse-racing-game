@@ -10,6 +10,8 @@ export default defineConfig({
     fullyParallel: true,
     forbidOnly: isCI,
     retries: isCI ? 1 : 0,
+    // Baselines are written only by an explicit --update-snapshots run in Docker.
+    updateSnapshots: 'none',
     workers: isCI ? 2 : undefined,
     reporter: isCI
         ? [['github'], ['html', { open: 'never' }]]
@@ -43,6 +45,8 @@ export default defineConfig({
         {
             name: 'visual',
             testMatch: '**/visual/**/*.spec.ts',
+            // A retry would hide a screenshot that differs between runs.
+            retries: 0,
             use: { ...devices['Desktop Chrome'], reducedMotion: 'reduce' },
         },
     ],
