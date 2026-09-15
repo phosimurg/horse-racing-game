@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, useTemplateRef, watch } from 'vue';
+import { nextTick, onMounted, useTemplateRef, watch } from 'vue';
 
 import BaseBadge from '@/components/ui/BaseBadge.vue';
 import BaseCard from '@/components/ui/BaseCard.vue';
@@ -61,6 +61,13 @@ watch(
         }
     }
 );
+
+// A remount, such as crossing the narrow layout breakpoint, would otherwise start at lap 1.
+onMounted(() => {
+    if (visible) {
+        scrollToNewestLap();
+    }
+});
 </script>
 
 <template>

@@ -31,14 +31,20 @@ afterEach(() => {
 });
 
 function mountView({ narrow = false } = {}) {
-    stubMatchMedia(narrow);
+    const media = stubMatchMedia(narrow);
     const frames = stubAnimationFrames();
     const pinia: Pinia = createPinia();
     wrapper = mount(RaceDashboardView, {
         global: { plugins: [pinia], provide: { [RNG_KEY]: createRng(42) } },
         attachTo: document.body,
     });
-    return { view: wrapper, frames, race: useRaceStore(pinia), horses: useHorsesStore(pinia) };
+    return {
+        view: wrapper,
+        media,
+        frames,
+        race: useRaceStore(pinia),
+        horses: useHorsesStore(pinia),
+    };
 }
 
 function button(view: VueWrapper, name: string) {
@@ -238,6 +244,27 @@ describe('[RES-01] dashboard results scrolling', () => {
         await nextTick();
 
         expect(callsWhileHidden).toBe(0);
+        expect(scrollTo).toHaveBeenCalledTimes(1);
+        expect(scrollTo.mock.contexts[0]).toBe(view.get('.results-list').element);
+    });
+
+    it('brings the newest lap back into view after the layout switches to narrow and back', async () => {
+        const { view, media, frames, race } = mountView();
+        await activate(view, 'Generate Program');
+        await activate(view, 'Start');
+        for (let frame = 0; frame < 200 && race.results.length === 0; frame += 1) {
+            frames.frame(frame * 100);
+        }
+        await nextTick();
+        await nextTick();
+        scrollTo.mockClear();
+
+        media.change(true);
+        await nextTick();
+        media.change(false);
+        await nextTick();
+        await nextTick();
+
         expect(scrollTo).toHaveBeenCalledTimes(1);
         expect(scrollTo.mock.contexts[0]).toBe(view.get('.results-list').element);
     });
