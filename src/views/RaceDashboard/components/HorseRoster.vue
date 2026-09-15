@@ -59,6 +59,8 @@ const COLUMNS = [
 }
 
 .horse-roster-scroll {
+    /* Keeps the visually hidden table captions inside the scroll area. */
+    position: relative;
     overflow-x: auto;
 }
 </style>
