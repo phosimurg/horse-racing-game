@@ -182,16 +182,81 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
 - The test helper rule rejects an alias import and a relative import in a `.ts` file and an alias import in a `.vue` file, and accepts spec files.
 - The widened rule reports all six probe forms: an import, a named re-export, `export *`, a type re-export and a dynamic import in a `.ts` file, and a re-export in a `.vue` file. The first probe run printed nothing because ESLint 10 no longer ships the `unix` formatter, so the empty output was treated as a failed check, not a pass.
 
+## Phase 4: Interface (2026-09-15)
+
+### Where the agent was wrong or incomplete, and how it was caught
+
+1. **Scrollable panels were not reachable by keyboard.**
+   - Issue: the roster table, program list, results list and lap stepper scrolled without any focusable content.
+   - Caught by: axe (`scrollable-region-focusable`) in the end-to-end accessibility specs.
+   - Resolution: each area is focusable and named.
+2. **A replay test compared two different text models.**
+   - Issue: `allInnerTexts()` keeps cell separators, while `toHaveText` reads text content.
+   - Caught by: the first end-to-end run.
+   - Resolution: both sides read text content.
+3. **View tests expected isolated announcements.**
+   - Issue: once the announcer joined pending messages, two view tests still expected a single message.
+   - Caught by: the view test run.
+   - Resolution: the tests flush the previous announcement first.
+4. **A full-race smoke test sat at the default timeout in WebKit.**
+   - Caught by: the end-to-end run, where WebKit needed about 30 seconds for the whole race.
+   - Resolution: the test is marked slow, which triples its timeout.
+5. **A new list name broke a locator.**
+   - Issue: the "Program laps" list also matched `name: 'Laps'`, so the lap stepper locator found two lists.
+   - Resolution: the locator matches the exact name.
+6. **Hidden table captions stretched the page.**
+   - Issue: the visually hidden captions are absolutely positioned and had no positioned ancestor inside the program and results lists, so they escaped the scroll areas and left about 1,070 px of empty page on desktop and 1,370 px under the Program tab on a phone.
+   - Caught by: the design screenshots, where the desktop page ran far past its content; confirmed by measuring the page in the browser.
+   - Resolution: the scroll areas are positioned, and the layout specs check that the page ends with its content.
+7. **The visual race test depended on real elapsed time.**
+   - Issue: `clock.install()` keeps the fake clock flowing, so the horses stopped a few pixels apart between runs.
+   - Caught by: the Visual regression job on PR #5, where only the horse sprites differed from the baselines.
+   - Resolution: the spec pauses the clock after load so that `runFor` alone moves the race; the regenerated baselines passed three repeated runs.
+8. **The gallop animation sent racing horses back toward the start line.**
+   - Issue: the gallop keyframes animated `transform`, which replaced the lane's `translateX`, so every horse slid between its position and the start line every 0.3 seconds.
+   - Caught by: the Phase 4 review, then confirmed in the browser, where runners drifted up to 113 px from their positions. The visual tests pause first, and the NFR-04 test accepted any transform.
+   - Resolution: the gallop animates the `translate` property. An end-to-end test samples every runner against its progress while the gallop runs, and the NFR-04 test compares rendered positions.
+9. **The results list scrolled the whole page.**
+   - Issue: `scrollIntoView` scrolls every scrollable ancestor, so the page jumped 320 px when a lap finished, and a hidden Results tab never caught up.
+   - Caught by: the Phase 4 review, then confirmed in the browser.
+   - Resolution: the panel scrolls only its list, and again when the Results tab opens, with view and end-to-end tests.
+10. **Some states relied on color alone or had no room.**
+    - Issue: the selected tab was a 1.27:1 lime fill in the light theme and invisible in forced colors, the live lap differed from finished laps only by bar color, the lap stepper was 0 px wide at 768 px, horses could travel 40 px at 320 px, and the paused bottom bar (121 px) was taller than the scroll padding (96 px).
+    - Caught by: the Phase 4 review, then measured in the browser.
+    - Resolution: an underline and a forced-colors highlight for the selected tab, a thicker live lap bar, a separate lap stepper row below 1280 px, a capped lane name column and 8rem of scroll padding, with layout and accessibility tests.
+11. **Several tests could not fail.**
+    - Issue: the theme test accepted any change, the winner announcement used `toContain`, and neither the leader text nor reduced motion was tested.
+    - Caught by: the Phase 4 review.
+    - Resolution: exact assertions, with earlier announcements flushed first, and new tests for the leader and reduced motion.
+12. **The runners looked too plain.**
+    - Issue: a flat white horse with a 2 px bob looked simple next to the rest of the dashboard.
+    - Caught by: the author's review of the design screenshots (HRG-40).
+    - Resolution: an articulated SVG thoroughbred in five coat colors with an outline, a crouched jockey in the horse's silks and a four-beat gallop cycle, with a standing pose at the start gate, a frozen stride while paused and no gallop under reduced motion. At the author's request, design.md no longer lists the flourishes that were never built, and the font preload and fallback wait for the Phase 5 Lighthouse run.
+
+### Dependencies
+
+- `npm view @fontsource-variable/archivo@5.3.0` (2026-09-15): version 5.3.0, license OFL-1.1, no peer dependencies and no engine constraints.
+
+### Environment
+
+- The disk filled up during a Docker run that reinstalled packages into the `node_modules` volume, and the Docker daemon stopped responding. The author freed space and restarted Docker Desktop; regenerable outputs were cleared and the volume was reinstalled once.
+
 ## Task log
 
-| Task              | Delegated to the agent                                                                                                          | Kept by the author                                                                                              | Agent issue caught          | Rule added                                           |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------- | ---------------------------------------------------- |
-| HRG-01            | Running the scaffold command                                                                                                    | Approval of the scaffold options                                                                                | None                        | None                                                 |
-| HRG-02 to HRG-07  | Drafting the plan copy, specifications, task breakdown, ADRs and this log from the approved plan                                | Approval with decisions D1 to D7, which changed the roster, pause and upset rules                               | None so far                 | None                                                 |
-| HRG-10 to HRG-19  | Version and engine research, configuration drafts, crash diagnosis                                                              | Node upgrade to 22.23.2, local Docker use, GitHub Pages and the preview entry                                   | Phase 1 items 1 to 8        | Dependency changes use npm 11 (`AGENTS.md`)          |
-| HRG-20            | Tests from design sections 3.1, 3.2 and 4.4 (test-author), mulberry32 reference values derived two ways, implementation, review | Phase 2 exit criteria and the Stryker installation; the design additions await review in the phase pull request | Phase 2 items 1, 2, 4 and 5 | Test helpers stay in spec files (`eslint.config.ts`) |
-| HRG-21            | Tests from design sections 3.1, 4.2 and 4.4 (test-author), palette contrast and distinctness checks, implementation, review     | The name pool theme and the palette await review in the phase pull request                                      | Phase 2 item 3              | None                                                 |
-| HRG-22 to HRG-24  | Batched tests (one test-author run on Sonnet 5), implementation, calibration check                                              | Batching, the Sonnet test-author, pushes without confirmation, then fast mode                                   | Phase 2 items 6 and 7       | Fast mode (`AGENTS.md`)                              |
-| HRG-25            | Stryker setup, baseline and mutation workflow                                                                                   | Stryker ahead of the remaining domain tasks                                                                     | Phase 2 item 6              | `vitest.dir` stays unset (`stryker.config.mjs`)      |
-| HRG-30 to HRG-32  | Stores, seed resolution and RNG injection, test-first in the main session (fast mode)                                           | Fast mode                                                                                                       | None                        | None                                                 |
-| HRG-33 and HRG-34 | Playback, theme, media query and announcer composables, test-first in the main session                                          | Fast mode                                                                                                       | None                        | None                                                 |
+| Task                        | Delegated to the agent                                                                                                          | Kept by the author                                                                                              | Agent issue caught          | Rule added                                           |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------- | ---------------------------------------------------- |
+| HRG-01                      | Running the scaffold command                                                                                                    | Approval of the scaffold options                                                                                | None                        | None                                                 |
+| HRG-02 to HRG-07            | Drafting the plan copy, specifications, task breakdown, ADRs and this log from the approved plan                                | Approval with decisions D1 to D7, which changed the roster, pause and upset rules                               | None so far                 | None                                                 |
+| HRG-10 to HRG-19            | Version and engine research, configuration drafts, crash diagnosis                                                              | Node upgrade to 22.23.2, local Docker use, GitHub Pages and the preview entry                                   | Phase 1 items 1 to 8        | Dependency changes use npm 11 (`AGENTS.md`)          |
+| HRG-20                      | Tests from design sections 3.1, 3.2 and 4.4 (test-author), mulberry32 reference values derived two ways, implementation, review | Phase 2 exit criteria and the Stryker installation; the design additions await review in the phase pull request | Phase 2 items 1, 2, 4 and 5 | Test helpers stay in spec files (`eslint.config.ts`) |
+| HRG-21                      | Tests from design sections 3.1, 4.2 and 4.4 (test-author), palette contrast and distinctness checks, implementation, review     | The name pool theme and the palette await review in the phase pull request                                      | Phase 2 item 3              | None                                                 |
+| HRG-22 to HRG-24            | Batched tests (one test-author run on Sonnet 5), implementation, calibration check                                              | Batching, the Sonnet test-author, pushes without confirmation, then fast mode                                   | Phase 2 items 6 and 7       | Fast mode (`AGENTS.md`)                              |
+| HRG-25                      | Stryker setup, baseline and mutation workflow                                                                                   | Stryker ahead of the remaining domain tasks                                                                     | Phase 2 item 6              | `vitest.dir` stays unset (`stryker.config.mjs`)      |
+| HRG-30 to HRG-32            | Stores, seed resolution and RNG injection, test-first in the main session (fast mode)                                           | Fast mode                                                                                                       | None                        | None                                                 |
+| HRG-33 and HRG-34           | Playback, theme, media query and announcer composables, test-first in the main session                                          | Fast mode                                                                                                       | None                        | None                                                 |
+| HRG-40 and HRG-41           | Tokens, global styles, the font and color utilities, test-first in the main session                                             | No design canvas (screenshot approval), original SVG icons and the font package                                 | None                        | None                                                 |
+| HRG-42 and HRG-43           | UI kit and common components with component tests in the main session                                                           | Original SVG icons                                                                                              | None                        | None                                                 |
+| HRG-44                      | Dashboard view components and view wiring with a view test in the main session                                                  | None                                                                                                            | None                        | None                                                 |
+| HRG-50 to HRG-52 and HRG-54 | End-to-end specs, keyboard access fixes and traceability enforcement in the main session                                        | Docker Desktop restart after the disk filled                                                                    | Phase 4 items 1 to 5        | None                                                 |
+| HRG-53                      | Error handler, theme colors, SVG favicon and their tests in the main session                                                    | None                                                                                                            | None                        | None                                                 |
+| HRG-40                      | Design system and dashboard built from design section 8, presented as seeded screenshots and a live race                        | The author asked for richer runners, then approved the design on 2026-09-15                                     | Phase 4 item 12             | None                                                 |
