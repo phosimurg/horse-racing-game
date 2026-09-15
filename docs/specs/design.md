@@ -403,7 +403,7 @@ CTRL-02 covers repeated activations of one control, such as a double click or a 
 
 ## 8. Design system: "Race Night" broadcast
 
-Final tokens are extracted in HRG-41 from the design canvas approved in HRG-40.
+Tokens are written directly from this section in HRG-41. Instead of a design canvas, the author approves the result from desktop and mobile screenshots of the running app (HRG-40).
 
 - **Concept:** live TV race graphics.
   - A floodlit-night dark theme is the signature look.
@@ -414,7 +414,7 @@ Final tokens are extracted in HRG-41 from the design canvas approved in HRG-40.
   - Runners are silk-colored jockeys with number bibs on an original SVG horse.
   - A lower-third banner shows the lap (for example "LAP 3/6 - 1600 M") and the current leader.
   - A brief finish-line photo flash marks each winner.
-- **Typography:** Archivo Variable, self-hosted.
+- **Typography:** Archivo Variable, self-hosted through `@fontsource-variable/archivo`.
   - Condensed heavy width for display text, lap titles and numbers.
   - Normal width for body text.
   - Tabular numerals for conditions, positions and times.
@@ -425,7 +425,7 @@ Final tokens are extracted in HRG-41 from the design canvas approved in HRG-40.
   - A single chartreuse accent for the primary action and live state.
   - Gold, silver and bronze podium markers, always paired with text and an icon.
   - 20 named racing-silk colors, each with a computed bib text color of at least 4.5:1 contrast. Section 3.1 bounds the palette, so bib text tokens at least as dark as `#151515` and as light as `#f5f5f5` always pass.
-- **Iconography:** Phosphor icons for controls; the runner is an original SVG, because Phosphor's horse icon is a chess-knight head.
+- **Iconography:** original inline SVG icons for the controls (start, pause, new program, sun, moon, trophy) and an original SVG runner. The author chose them over a Phosphor package that has not been published since 2024.
 - **Motion:**
   - One staggered reveal on first load, results cards entering with `TransitionGroup`, a lap stepper fill and a gallop bob.
   - Under `prefers-reduced-motion` only horse movement remains.
@@ -483,7 +483,7 @@ Beyond AA: `prefers-reduced-motion` and `forced-colors` are supported, and `lang
 
 - Horse movement uses `transform` driven by a `--progress` custom property; no layout reads per frame.
 - Self-hosted woff2 with `font-display: swap`, a preloaded display face and a metric-matched fallback.
-- Vite's Baseline Widely Available build target; no runtime dependencies beyond Vue, Pinia and the icon components in use.
+- Vite's Baseline Widely Available build target; no runtime dependencies beyond Vue, Pinia and the self-hosted font package.
 
 ### 10.6 Security and metadata
 
