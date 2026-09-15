@@ -67,6 +67,17 @@ describe('[NFR-01] HorseRunner', () => {
             contrastRatio(color?.hex ?? '', bib.attributes('fill') ?? '')
         ).toBeGreaterThanOrEqual(4.5);
     });
+
+    it('stands at the start gate, holds a stride elsewhere and gallops only while moving', () => {
+        const color = SILK_COLORS[4]!;
+        const classesOf = (props: { atGate?: boolean; moving?: boolean }) =>
+            mount(HorseRunner, { props: { color, bib: 3, ...props } }).classes();
+
+        expect(classesOf({ atGate: true })).not.toContain('in-stride');
+        expect(classesOf({})).toContain('in-stride');
+        expect(classesOf({})).not.toContain('moving');
+        expect(classesOf({ moving: true })).toContain('moving');
+    });
 });
 
 describe('[PROG-04] RoundCard', () => {
