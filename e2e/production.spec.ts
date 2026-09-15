@@ -18,6 +18,15 @@ test.describe('[NFR-06] production security', () => {
     });
 });
 
+test.describe('[NFR-06] production metadata', () => {
+    test('declares the SVG icon and a theme color for each color scheme', async ({ page }) => {
+        await page.goto('/');
+
+        await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', /favicon\.svg$/);
+        await expect(page.locator('meta[name="theme-color"]')).toHaveCount(2);
+    });
+});
+
 test.describe('[NFR-04] runtime quality', () => {
     test('moves the horses with transforms only', async ({ page }) => {
         await page.clock.install();
