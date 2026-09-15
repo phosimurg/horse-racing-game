@@ -43,13 +43,14 @@ ESLint enforces the layer rules from design section 2.1. Path-scoped rules live 
 
 ## Workflow
 
-- Work on one task from `docs/specs/tasks.md` at a time: failing tests first, then the implementation.
+- Work through `docs/specs/tasks.md` in the main session: failing tests first, then the implementation. Tightly coupled tasks may share a commit that lists every `Refs` ID.
+- Run the `code-reviewer` agent once per phase, before its pull request.
 - Requirement tests start their `describe` title with the ID, for example `describe('[PROG-02] round distances', ...)`.
 - English everywhere; comments only where intent is not obvious from names.
 
 ## Definition of done
 
-- `npm run verify` passes, and `npm run test:e2e` passes when `src/` or `e2e/` changed.
+- `npm run verify` passes before every commit, `npm run test:e2e` passes when the rendered app or `e2e/` changed, and `npm run test:mutation` passes before a pull request that changes `src/domain`.
 - New behavior has spec-derived assertions under a requirement ID.
 - `docs/specs/tasks.md` and `docs/ai-workflow.md` are updated.
 
