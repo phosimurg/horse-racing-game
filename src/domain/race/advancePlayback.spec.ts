@@ -276,3 +276,48 @@ describe('[RACE-01] advancePlayback input validation', () => {
         expect(call).not.toThrow(DELTA_RULE);
     });
 });
+
+describe('[RES-02] advancePlayback holds every horse at the finish line', () => {
+    it('shows progress 1 for a faster and a slower horse once the last round finishes', () => {
+        const round = { number: 1, distance: 100, horseIds: [1, 2] };
+        const runs = [
+            { horseId: 1, lane: 1, checkpointsMs: [1200] },
+            { horseId: 2, lane: 2, checkpointsMs: [1500] },
+        ];
+        const program = { rounds: [round], simulations: [{ round, runs, durationMs: 1500 }] };
+
+        const step = advancePlayback(
+            { roundIndex: 0, phase: 'racing', elapsedMs: 0 },
+            2000,
+            program
+        );
+
+        expect(step.isFinished).toBe(true);
+        expect(runs.map((run) => progressAt(run, step.state.elapsedMs))).toEqual([1, 1]);
+    });
+});
+
+describe('[RACE-05] advancePlayback state validation', () => {
+    const round = { number: 1, distance: 100, horseIds: [1] };
+    const simulation = {
+        round,
+        runs: [{ horseId: 1, lane: 1, checkpointsMs: [1000] }],
+        durationMs: 1000,
+    };
+    const program = { rounds: [round, round], simulations: [simulation, simulation] };
+
+    it.each([Number.NaN, -1, Number.POSITIVE_INFINITY])(
+        'rejects a state with elapsedMs %s',
+        (elapsedMs) => {
+            expect(() =>
+                advancePlayback({ roundIndex: 0, phase: 'racing', elapsedMs }, 16, program)
+            ).toThrow(/^advancePlayback:(?=.*\belapsedMs\b)(?=.*finite)/);
+        }
+    );
+
+    it('rejects an intermission after the last round', () => {
+        expect(() =>
+            advancePlayback({ roundIndex: 1, phase: 'intermission', elapsedMs: 0 }, 16, program)
+        ).toThrow(/^advancePlayback:(?=.*last round)(?=.*intermission)/);
+    });
+});

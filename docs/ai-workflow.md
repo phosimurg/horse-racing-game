@@ -168,6 +168,10 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
 - The author first batched HRG-22 to HRG-24 into one test-author run, then switched to fast mode: tests and code are written in the main session, the code-reviewer runs once per phase, e2e runs only when the rendered app changes, and pushes need no confirmation once the gates pass.
 - Stryker moved ahead of the remaining domain tasks, and HRG-23 ran before HRG-22 because generateProgram calls simulateRound.
 
+### Phase review
+
+- The single Opus review of Phase 2 found no Critical or High issues. It flagged the missing leader tie rule (now in design 5.2 for HRG-33), unvalidated playback state, a finish-line test that checked one horse, a mutation path filter without the Vite config and `package.json`, and process docs that still required e2e on every pull request; all were fixed.
+
 ### Environment
 
 - `npm run test:e2e` failed in all three browsers because no Playwright browsers are installed on the host. The gate ran in the pinned `mcr.microsoft.com/playwright:v1.63.0-noble` image with the existing `node_modules` volume, the image CI uses, so nothing was downloaded.
