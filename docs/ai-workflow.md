@@ -204,6 +204,14 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
 5. **A new list name broke a locator.**
    - Issue: the "Program laps" list also matched `name: 'Laps'`, so the lap stepper locator found two lists.
    - Resolution: the locator matches the exact name.
+6. **Hidden table captions stretched the page.**
+   - Issue: the visually hidden captions are absolutely positioned and had no positioned ancestor inside the program and results lists, so they escaped the scroll areas and left about 1,070 px of empty page on desktop and 1,370 px under the Program tab on a phone.
+   - Caught by: the design screenshots, where the desktop page ran far past its content; confirmed by measuring the page in the browser.
+   - Resolution: the scroll areas are positioned, and the layout specs check that the page ends with its content.
+7. **The visual race test depended on real elapsed time.**
+   - Issue: `clock.install()` keeps the fake clock flowing, so the horses stopped a few pixels apart between runs.
+   - Caught by: the Visual regression job on PR #5, where only the horse sprites differed from the baselines.
+   - Resolution: the spec pauses the clock after load so that `runFor` alone moves the race; the regenerated baselines passed three repeated runs.
 
 ### Environment
 
