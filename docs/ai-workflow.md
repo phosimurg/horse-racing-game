@@ -130,10 +130,65 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
 - ESLint reports all seven deliberate layer violations across the domain, stores, common components and UI kit.
 - The commit-msg hook rejected eight malformed messages on its first real use.
 
+## Phase 2: Domain (2026-09-14)
+
+### Where the agent was wrong or incomplete, and how it was caught
+
+1. **`randomInt` accepted ranges it cannot sample uniformly.**
+   - Issue: the implementing agent kept every safe-integer range after the test-author asked about it, although a draw has only 2^32 possible values.
+   - Caught by: the reviewer agent, which measured no odd results in 100,000 draws over a range of 2^33 integers.
+   - Resolution: design 3.2 rejects ranges of more than 2^32 integers, and tests pin both sides of that boundary.
+2. **Production code could import test helpers.**
+   - Issue: the layer rules did not stop non-spec files from importing `src/test`, and the type-check would not either, so a stubbed generator could ship in the bundle.
+   - Caught by: the reviewer agent, on the first spec that imports a shared helper.
+   - Resolution: a `no-restricted-syntax` rule covers every layer (design 2.1).
+3. **Two silk colors had no contrast margin.**
+   - Issue: Magenta and Teal reached 4.5:1 only against pure black or white bib text; against `#151515` or `#f5f5f5` they fell to 4.18:1 and 4.37:1, and no test computed contrast.
+   - Caught by: the reviewer agent, which measured every silk against near-black and near-white text.
+   - Resolution: design 3.1 bounds the palette against `#151515` and `#f5f5f5`, a WCAG contrast test covers all 20 silks, and four colors were retuned to at least 5.06:1.
+4. **The test helper rule missed re-exports and dynamic imports.**
+   - Issue: the selector matched only import declarations, so `export * from '@/test/stubRng'` or `import()` in a barrel passed lint.
+   - Caught by: the reviewer agent, re-checking the HRG-20 resolutions with in-memory ESLint probes.
+   - Resolution: the rule also matches export-from declarations and import expressions.
+5. **The design promised uniformity the formula cannot deliver.**
+   - Issue: after the range cap, the design said every integer in a range is equally likely, but splitting 2^32 draw values is exact only for power-of-two range sizes.
+   - Caught by: the reviewer agent, which counted the draw values that map to each result.
+   - Resolution: sections 3.1 and 4.4 state the limit; the game's ranges hold at most 100 integers, where the skew is one draw value in 2^32.
+6. **Stryker ran no tests.**
+   - Issue: the Stryker config set `vitest.dir`, and Vitest resolves `include` globs against that directory, so no spec matched; the warning pointed at related mode instead.
+   - Caught by: Stryker stopping with "No tests were executed", then `vitest run --dir src/domain/random` reproducing it.
+   - Resolution: `vitest.dir` stays unset with a comment; a baseline killed all 173 mutants in the random and horse modules.
+7. **A stopped agent had already written files.**
+   - Issue: a test-author run reported as failed on the spend limit had written three spec files before it stopped.
+   - Caught by: the next run, which found the untracked files and checked them against the design before keeping them.
+
+### Loop changes (2026-09-15)
+
+- The per-task subagent loop was too slow: one batched test-author run took about an hour, reviews took 10 to 15 minutes, and the monthly spend limit stopped the work twice.
+- The author first batched HRG-22 to HRG-24 into one test-author run, then switched to fast mode: tests and code are written in the main session, the code-reviewer runs once per phase, e2e runs only when the rendered app changes, and pushes need no confirmation once the gates pass.
+- Stryker moved ahead of the remaining domain tasks, and HRG-23 ran before HRG-22 because generateProgram calls simulateRound.
+
+### Phase review
+
+- The single Opus review of Phase 2 found no Critical or High issues. It flagged the missing leader tie rule (now in design 5.2 for HRG-33), unvalidated playback state, a finish-line test that checked one horse, a mutation path filter without the Vite config and `package.json`, and process docs that still required e2e on every pull request; all were fixed.
+
+### Environment
+
+- `npm run test:e2e` failed in all three browsers because no Playwright browsers are installed on the host. The gate ran in the pinned `mcr.microsoft.com/playwright:v1.63.0-noble` image with the existing `node_modules` volume, the image CI uses, so nothing was downloaded.
+
+### Guardrails proven before relying on them
+
+- The test helper rule rejects an alias import and a relative import in a `.ts` file and an alias import in a `.vue` file, and accepts spec files.
+- The widened rule reports all six probe forms: an import, a named re-export, `export *`, a type re-export and a dynamic import in a `.ts` file, and a re-export in a `.vue` file. The first probe run printed nothing because ESLint 10 no longer ships the `unix` formatter, so the empty output was treated as a failed check, not a pass.
+
 ## Task log
 
-| Task             | Delegated to the agent                                                                           | Kept by the author                                                                | Agent issue caught   | Rule added                                  |
-| ---------------- | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- | -------------------- | ------------------------------------------- |
-| HRG-01           | Running the scaffold command                                                                     | Approval of the scaffold options                                                  | None                 | None                                        |
-| HRG-02 to HRG-07 | Drafting the plan copy, specifications, task breakdown, ADRs and this log from the approved plan | Approval with decisions D1 to D7, which changed the roster, pause and upset rules | None so far          | None                                        |
-| HRG-10 to HRG-19 | Version and engine research, configuration drafts, crash diagnosis                               | Node upgrade to 22.23.2, local Docker use, GitHub Pages and the preview entry     | Phase 1 items 1 to 8 | Dependency changes use npm 11 (`AGENTS.md`) |
+| Task             | Delegated to the agent                                                                                                          | Kept by the author                                                                                              | Agent issue caught          | Rule added                                           |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------- | ---------------------------------------------------- |
+| HRG-01           | Running the scaffold command                                                                                                    | Approval of the scaffold options                                                                                | None                        | None                                                 |
+| HRG-02 to HRG-07 | Drafting the plan copy, specifications, task breakdown, ADRs and this log from the approved plan                                | Approval with decisions D1 to D7, which changed the roster, pause and upset rules                               | None so far                 | None                                                 |
+| HRG-10 to HRG-19 | Version and engine research, configuration drafts, crash diagnosis                                                              | Node upgrade to 22.23.2, local Docker use, GitHub Pages and the preview entry                                   | Phase 1 items 1 to 8        | Dependency changes use npm 11 (`AGENTS.md`)          |
+| HRG-20           | Tests from design sections 3.1, 3.2 and 4.4 (test-author), mulberry32 reference values derived two ways, implementation, review | Phase 2 exit criteria and the Stryker installation; the design additions await review in the phase pull request | Phase 2 items 1, 2, 4 and 5 | Test helpers stay in spec files (`eslint.config.ts`) |
+| HRG-21           | Tests from design sections 3.1, 4.2 and 4.4 (test-author), palette contrast and distinctness checks, implementation, review     | The name pool theme and the palette await review in the phase pull request                                      | Phase 2 item 3              | None                                                 |
+| HRG-22 to HRG-24 | Batched tests (one test-author run on Sonnet 5), implementation, calibration check                                              | Batching, the Sonnet test-author, pushes without confirmation, then fast mode                                   | Phase 2 items 6 and 7       | Fast mode (`AGENTS.md`)                              |
+| HRG-25           | Stryker setup, baseline and mutation workflow                                                                                   | Stryker ahead of the remaining domain tasks                                                                     | Phase 2 item 6              | `vitest.dir` stays unset (`stryker.config.mjs`)      |

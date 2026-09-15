@@ -54,7 +54,7 @@ flowchart TB
 
 ### 2.1 Layer rules
 
-Enforced with ESLint `no-restricted-imports` and `no-restricted-globals`.
+Enforced with ESLint `no-restricted-imports` and `no-restricted-globals`. Helpers in `src/test` are for `*.spec.ts` files only, which `no-restricted-syntax` enforces in every layer.
 
 | Layer                                     | May import                                   | Must not import                                |
 | ----------------------------------------- | -------------------------------------------- | ---------------------------------------------- |
@@ -74,8 +74,8 @@ src/
   main.ts                 bootstrap: Pinia, RNG provide, errorHandler, fonts, global styles
   App.vue                 renders RaceDashboardView
   domain/
-    random/               createRng (mulberry32), randomInt, sampleWithoutReplacement
-    horse/                horse.types, horse.constants (name pool, 20 named silk colors), generateHorses
+    random/               random.types, createRng (mulberry32), randomInt, sampleWithoutReplacement
+    horse/                horse.types, horse.constants (count, condition bounds, name pool, 20 named silk colors), generateHorses
     race/                 race.types, race.constants, generateProgram, simulateRound, rankPlacements, progressAt, advancePlayback
     index.ts              public API
   stores/                 horses.ts, race.ts
@@ -85,7 +85,7 @@ src/
   views/RaceDashboard/    RaceDashboardView.vue, components/ (AppBar, LapStepper, RaceControls, HorseRoster, RaceTrack, RaceLane, ProgramPanel, ResultsPanel, MobileActionBar)
   utils/                  formatLapTitle, contrastRatio, readableTextColor, resolveSeed
   styles/                 layers.css, tokens.css, base.css, utilities.css
-  test/                   setup, createTestStores
+  test/                   setup, stubRng, createTestStores
 e2e/                      fixtures, behavior specs, visual/
 scripts/                  check-traceability.mjs
 ```
@@ -163,6 +163,8 @@ interface Rng {
 }
 
 declare function createRng(seed: number): Rng;
+declare function randomInt(min: number, max: number, rng: Rng): number; // integer in [min, max]
+declare function sampleWithoutReplacement<T>(items: readonly T[], count: number, rng: Rng): T[];
 declare function generateHorses(rng: Rng): Horse[];
 declare function generateProgram(horses: readonly Horse[], rng: Rng): RaceProgram;
 declare function simulateRound(
@@ -181,14 +183,33 @@ declare function advancePlayback(
 
 ### 3.1 Invariants
 
-- `generateHorses` returns 20 horses with ids 1 to 20, unique names, unique colors and integer conditions from 1 to 100.
-- `generateProgram` returns 6 rounds with distances from 1200 to 2200 in 200 m steps, 10 distinct horses per round and one simulation per round.
-- `generateProgram` throws when given fewer horses than a round needs.
+- `createRng` returns the same sequence for the same seed, and every value is in [0, 1).
+- `randomInt` returns an integer from `min` to `max` inclusive and consumes one draw.
+- `sampleWithoutReplacement` returns the entries at `count` distinct positions of `items` in draw order, consumes `count` draws and never mutates `items`.
+- `generateHorses` returns 20 horses with ids 1 to 20, unique names, unique colors and integer conditions from 1 to 100, and consumes 60 draws.
+- `HORSE_NAMES` holds 40 unique, non-blank names; `SILK_COLORS` holds 20 colors with unique, non-blank names and unique lowercase `#rrggbb` hex values.
+- Every `SILK_COLORS` hex reaches a WCAG 2.2 contrast ratio of at least 4.5:1 against `#151515` or against `#f5f5f5`, so bib text at least that dark or that light stays readable.
+- `generateProgram` returns 6 rounds numbered 1 to 6 with distances from 1200 to 2200 in 200 m steps, 10 distinct horses per round and one simulation per round, whose `round` is that round.
+- `simulateRound` returns one run per horse in lane order, with `lane` equal to the horse's index in `horseIds` plus 1, and consumes `1 + distance / SEGMENT_LENGTH_M` draws per horse.
 - Every `checkpointsMs` list is strictly increasing and has `distance / SEGMENT_LENGTH_M` entries.
 - `durationMs` equals the largest finish time in its round.
-- `rankPlacements` assigns positions 1 to 10 exactly once, ordered by finish time, ties broken by lane.
-- `progressAt` is 0 at or before 0 ms, 1 at or after the finish time and non-decreasing in between.
+- `rankPlacements` assigns positions from 1 to the number of runs exactly once, ordered by finish time (the last checkpoint), ties broken by lane.
+- `progressAt` is 0 at or before 0 ms, 1 at or after the finish time and non-decreasing in between. It is linear within each segment, so it equals k / n at the kth of n checkpoints.
 - `advancePlayback` never loses or double-counts elapsed time across phase or round boundaries, and never reports a round twice.
+- `advancePlayback` reports completed rounds in order and changes nothing for a delta of 0. When the last round completes it returns `isFinished` with the state held at that round's `durationMs`; a finished state stays unchanged.
+
+### 3.2 Input validation
+
+Public domain functions throw an `Error` whose message starts with the function name and names the violated rule, for example `createRng: seed must be an integer from 0 to 4294967295, received -1`.
+
+| Function                   | Rejects                                                                                                                                                             |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createRng`                | A seed that is not an integer from 0 to 4294967295                                                                                                                  |
+| `randomInt`                | Bounds that are not safe integers, `min` greater than `max`, or a range of more than 2^32 integers                                                                  |
+| `sampleWithoutReplacement` | A count that is not an integer from 0 to `items.length`                                                                                                             |
+| `simulateRound`            | A round without horses, a horse id missing from `horsesById`, or a distance that is not a positive multiple of `SEGMENT_LENGTH_M`                                   |
+| `generateProgram`          | Fewer than `HORSES_PER_ROUND` horses, or two horses with the same id                                                                                                |
+| `advancePlayback`          | A negative or non-finite `deltaMs`, a state with a negative or non-finite `elapsedMs` or a round index outside the program, or an intermission after the last round |
 
 ## 4. Race simulation
 
@@ -206,28 +227,32 @@ segmentMs          = SEGMENT_LENGTH_M / speed * 1000 / PLAYBACK_SPEED
 
 Jitter averages out over 12 to 22 segments, because its spread shrinks with the square root of the segment count, so it creates lead changes within a round without deciding it. A small `form` factor allows occasional upsets between closely matched horses while condition stays dominant (decision D7).
 
+A uniform factor with spread `v` is computed as `1 + v * (2 * next() - 1)`, so a draw of 0.5 gives exactly 1.
+
 ### 4.2 Constants
 
-Initial values, calibrated in HRG-23 against section 4.3.
+The simulation constants were calibrated in HRG-23 against section 4.3 and kept their initial values.
 
-| Constant                         | Initial value                      | Purpose                                                  |
-| -------------------------------- | ---------------------------------- | -------------------------------------------------------- |
-| `HORSE_COUNT`                    | 20                                 | Rule 1                                                   |
-| `HORSES_PER_ROUND`               | 10                                 | Rule 5                                                   |
-| `ROUND_DISTANCES_M`              | 1200, 1400, 1600, 1800, 2000, 2200 | Rule 6                                                   |
-| `CONDITION_MIN`, `CONDITION_MAX` | 1, 100                             | Rule 3                                                   |
-| `SEGMENT_LENGTH_M`               | 100                                | Simulation resolution                                    |
-| `BASE_SPEED_MPS`                 | 16                                 | Speed at condition 100 before randomness                 |
-| `MIN_CONDITION_FACTOR`           | 0.82                               | Share of base speed kept at condition 0                  |
-| `FORM_VARIANCE`                  | 0.02                               | Per-round form spread, kept small so condition dominates |
-| `SEGMENT_JITTER`                 | 0.05                               | Per-segment spread                                       |
-| `PLAYBACK_SPEED`                 | 18                                 | Simulated seconds per real second                        |
-| `INTERMISSION_MS`                | 1500                               | Pause between rounds                                     |
-| `MAX_FRAME_DELTA_MS`             | 100                                | Upper bound for one frame's time step                    |
+| Constant                         | Value                                               | Purpose                                                  |
+| -------------------------------- | --------------------------------------------------- | -------------------------------------------------------- |
+| `HORSE_COUNT`                    | 20                                                  | Rule 1                                                   |
+| `HORSES_PER_ROUND`               | 10                                                  | Rule 5                                                   |
+| `ROUND_DISTANCES_M`              | 1200, 1400, 1600, 1800, 2000, 2200                  | Rule 6                                                   |
+| `CONDITION_MIN`, `CONDITION_MAX` | 1, 100                                              | Rule 3                                                   |
+| `HORSE_NAMES`                    | 40 names of computing pioneers                      | Name pool; each roster draws 20 names without repeats    |
+| `SILK_COLORS`                    | 20 named colors with lowercase `#rrggbb` hex values | Rule 2; each roster uses every color once                |
+| `SEGMENT_LENGTH_M`               | 100                                                 | Simulation resolution                                    |
+| `BASE_SPEED_MPS`                 | 16                                                  | Speed at condition 100 before randomness                 |
+| `MIN_CONDITION_FACTOR`           | 0.82                                                | Share of base speed kept at condition 0                  |
+| `FORM_VARIANCE`                  | 0.02                                                | Per-round form spread, kept small so condition dominates |
+| `SEGMENT_JITTER`                 | 0.05                                                | Per-segment spread                                       |
+| `PLAYBACK_SPEED`                 | 18                                                  | Simulated seconds per real second                        |
+| `INTERMISSION_MS`                | 1500                                                | Pause between rounds                                     |
+| `MAX_FRAME_DELTA_MS`             | 100                                                 | Upper bound for one frame's time step                    |
 
 ### 4.3 Calibration targets
 
-Measured with a seeded Monte Carlo test over at least 2000 head-to-head rounds at 1200 m. Assertion bounds are at least 5 standard errors wide, so reordering random draws cannot flip the result.
+Measured with a seeded Monte Carlo test over at least 2000 head-to-head rounds at 1200 m. For each gap, the lower condition cycles through every value that keeps both horses within 1 to 100, and the better horse alternates between lanes 1 and 2. Each observed win rate must sit at least 5 standard errors, computed from the observed rate and the round count, inside every finite bound of its band, so reordering random draws cannot flip the result.
 
 | Condition gap     | Win rate of the better horse |
 | ----------------- | ---------------------------- |
@@ -235,11 +260,16 @@ Measured with a seeded Monte Carlo test over at least 2000 head-to-head rounds a
 | 20 points         | At least 93%                 |
 | 30 points or more | At least 99%                 |
 
-Playback targets: winners finish in about 4 to 6 s at 1200 m and 7 to 10 s at 2200 m.
+Playback targets: winners finish in about 4 to 6 s at 1200 m and 7 to 10 s at 2200 m. Without randomness (every draw 0.5), horses with conditions 1 and 100 both finish inside those windows.
 
 ### 4.4 Determinism
 
-- `createRng(seed)` implements mulberry32: a 32-bit generator that is fast and adequate for games, not for cryptography.
+- `createRng(seed)` implements mulberry32: a 32-bit generator that is fast and adequate for games, not for cryptography. `next()` divides each 32-bit output by 2^32.
+- `randomInt(min, max, rng)` returns `min + floor(next() * (max - min + 1))`. A draw has 2^32 possible values, so ranges of more than 2^32 integers are rejected; results are exactly uniform only when the range size is a power of two.
+- `sampleWithoutReplacement(items, count, rng)` selects and removes: each draw removes the entry at `randomInt(0, remaining.length - 1, rng)` from `remaining`, a copy of the entries not drawn yet, and appends it to the sample.
+- `generateHorses(rng)` samples 20 names from `HORSE_NAMES`, then all 20 `SILK_COLORS`, both with `sampleWithoutReplacement`, then draws one condition per horse in id order with `randomInt(CONDITION_MIN, CONDITION_MAX, rng)`. Horse n gets the nth sampled name and color.
+- `simulateRound(round, horsesById, rng)` draws, for each horse in lane order, its form and then one jitter per segment.
+- `generateProgram(horses, rng)` draws the lineups of all six rounds first, each with `sampleWithoutReplacement(horses, HORSES_PER_ROUND, rng)` so that draw order gives lanes 1 to 10, and then simulates the rounds in order.
 - Randomness is consumed in a fixed order and only at generation time: a roster at load, then a new roster, the rounds and all six simulations on each Generate Program. Playback consumes none, so pausing, frame rate and tab visibility cannot change results.
 - `resolveSeed` accepts a decimal uint32 from `?seed=`; anything else falls back to `crypto.getRandomValues`.
 
@@ -303,7 +333,7 @@ Frame algorithm while `status === 'running'`:
 
 On pause, finish or unmount the frame is cancelled and `lastTimestamp` is cleared. A new program resets the state to round 0, racing, 0 ms.
 
-Round timeline: racing from 0 ms to `durationMs` (the last horse finishes and the result is published), then intermission for `INTERMISSION_MS`, then the next round starts. Leftover time carries across each boundary.
+Round timeline: racing from 0 ms to `durationMs` (the last horse finishes and the result is published), then intermission for `INTERMISSION_MS`, then the next round starts. Leftover time carries across each boundary. A phase ends when its elapsed time reaches its duration, and the last round has no intermission.
 
 ### 5.3 RNG injection
 
@@ -389,7 +419,7 @@ Final tokens are extracted in HRG-41 from the design canvas approved in HRG-40.
   - Turf green track.
   - A single chartreuse accent for the primary action and live state.
   - Gold, silver and bronze podium markers, always paired with text and an icon.
-  - 20 named racing-silk colors, each with a computed bib text color of at least 4.5:1 contrast.
+  - 20 named racing-silk colors, each with a computed bib text color of at least 4.5:1 contrast. Section 3.1 bounds the palette, so bib text tokens at least as dark as `#151515` and as light as `#f5f5f5` always pass.
 - **Iconography:** Phosphor icons for controls; the runner is an original SVG, because Phosphor's horse icon is a chess-knight head.
 - **Motion:**
   - One staggered reveal on first load, results cards entering with `TransitionGroup`, a lap stepper fill and a gallop bob.
