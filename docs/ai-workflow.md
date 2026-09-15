@@ -228,6 +228,10 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
     - Issue: the theme test accepted any change, the winner announcement used `toContain`, and neither the leader text nor reduced motion was tested.
     - Caught by: the Phase 4 review.
     - Resolution: exact assertions, with earlier announcements flushed first, and new tests for the leader and reduced motion.
+12. **The runners looked too plain.**
+    - Issue: a flat white horse with a 2 px bob looked simple next to the rest of the dashboard.
+    - Caught by: the author's review of the design screenshots (HRG-40).
+    - Resolution: an articulated SVG thoroughbred in five coat colors with an outline, a crouched jockey in the horse's silks and a four-beat gallop cycle, with a standing pose at the start gate, a frozen stride while paused and no gallop under reduced motion. At the author's request, design.md no longer lists the flourishes that were never built, and the font preload and fallback wait for the Phase 5 Lighthouse run.
 
 ### Dependencies
 

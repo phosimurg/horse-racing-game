@@ -17,6 +17,19 @@
         --color-turf-stripe: light-dark(#2a7442, #226b3d);
         --color-rail: #f5f7fa;
         --color-lane-ink: #f5f7fa;
+        --color-coat-bay: #8a4b26;
+        --color-coat-bay-points: #231914;
+        --color-coat-chestnut: #b0612e;
+        --color-coat-chestnut-points: #7a3b17;
+        --color-coat-brown: #5a3422;
+        --color-coat-brown-points: #1e1512;
+        --color-coat-grey: #bdb7ad;
+        --color-coat-grey-points: #6d665e;
+        --color-coat-black: #2f2926;
+        --color-coat-black-points: #141111;
+        --color-hoof: #1a1614;
+        --color-boot: #151515;
+        --color-track-shadow: rgb(0 0 0 / 30%);
         --color-podium-ink: #0b1020;
         --color-gold: #f2c14e;
         --color-silver: #c9d1dc;
@@ -58,6 +71,7 @@
         --target-primary: 2.75rem;
         --duration-fast: 150ms;
         --duration-slow: 400ms;
+        --duration-stride: 440ms;
         --easing-standard: cubic-bezier(0.2, 0, 0, 1);
     }
 

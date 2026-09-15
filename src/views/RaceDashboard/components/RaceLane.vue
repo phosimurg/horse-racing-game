@@ -30,6 +30,7 @@ const runnerStyle = computed(() => ({ '--progress': progress }));
                 :color="horse.color"
                 :bib="horse.id"
                 :moving="moving"
+                :at-gate="progress === 0"
             />
         </span>
     </li>
@@ -60,6 +61,8 @@ const runnerStyle = computed(() => ({ '--progress': progress }));
 }
 
 .race-lane-strip {
+    --runner-size: 4rem;
+
     position: relative;
     block-size: 2.5rem;
     container-type: inline-size;
@@ -79,6 +82,6 @@ const runnerStyle = computed(() => ({ '--progress': progress }));
     position: absolute;
     inset-block-end: 0.125rem;
     inset-inline-start: 0;
-    transform: translateX(calc(var(--progress) * (100cqi - 3.5rem)));
+    transform: translateX(calc(var(--progress) * (100cqi - var(--runner-size))));
 }
 </style>

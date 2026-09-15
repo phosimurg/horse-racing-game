@@ -410,25 +410,24 @@ Tokens are written directly from this section in HRG-41. Instead of a design can
   - A "Day Meet" light theme comes from the same tokens.
   - The first visit follows the system color scheme; a toggle overrides it and persists.
 - **Signature element: the track as hero.**
-  - Turf with mowing stripes, white rails, a start gate and a checkered finish line.
-  - Runners are silk-colored jockeys with number bibs on an original SVG horse.
+  - Turf with mowing stripes, white rails and a checkered finish line.
+  - Runners are original SVG thoroughbreds in five coat colors with a light outline for the turf, ridden by jockeys whose cap, silks and saddle cloth share the horse's silk color and number.
   - A lower-third banner shows the lap (for example "LAP 3/6 - 1600 M") and the current leader.
-  - A brief finish-line photo flash marks each winner.
 - **Typography:** Archivo Variable, self-hosted through `@fontsource-variable/archivo`.
   - Condensed heavy width for display text, lap titles and numbers.
   - Normal width for body text.
   - Tabular numerals for conditions, positions and times.
   - Fluid type scale with `clamp()`.
 - **Color:**
-  - Ink-navy base with subtle floodlight gradients and a static grain texture.
+  - Ink-navy base with subtle floodlight gradients.
   - Turf green track.
   - A single chartreuse accent for the primary action and live state.
   - Gold, silver and bronze podium markers, always paired with text and an icon.
   - 20 named racing-silk colors, each with a computed bib text color of at least 4.5:1 contrast. Section 3.1 bounds the palette, so bib text tokens at least as dark as `#151515` and as light as `#f5f5f5` always pass.
 - **Iconography:** original inline SVG icons for the controls (start, pause, new program, sun, moon, trophy) and an original SVG runner. The author chose them over a Phosphor package that has not been published since 2024.
 - **Motion:**
-  - One staggered reveal on first load, results cards entering with `TransitionGroup`, a lap stepper fill and a gallop bob.
-  - Under `prefers-reduced-motion` only horse movement remains.
+  - Running horses gallop in a four-beat leg cycle with body, head, tail and jockey motion, each slightly out of phase. Horses stand at the start gate and hold a frozen stride while paused.
+  - Under `prefers-reduced-motion` only horse movement along the lanes remains, in the frozen stride.
   - Nothing flashes more than three times per second.
   - Every CSS animation is finite or cancelable, so screenshots settle deterministically.
 
@@ -456,7 +455,7 @@ Tokens are written directly from this section in HRG-41. Instead of a design can
 | 1.4.4 Resize Text, 1.4.12 Text Spacing                   | Relative units, no fixed heights that clip text                                  |
 | 1.4.10 Reflow                                            | 320 CSS px without horizontal scrolling                                          |
 | 2.1.1 Keyboard, 2.4.3 Focus Order                        | Every control reachable and operable in a logical order                          |
-| 2.3.1 Three Flashes or Below Threshold                   | Photo flash fires once per round and is removed under reduced motion             |
+| 2.3.1 Three Flashes or Below Threshold                   | Nothing flashes                                                                  |
 | 2.4.1 Bypass Blocks                                      | Skip link to the race track                                                      |
 | 2.4.7 Focus Visible, 2.4.11 Focus Not Obscured (Minimum) | `:focus-visible` rings; `scroll-padding` keeps focus clear of the sticky bar     |
 | 2.5.8 Target Size (Minimum)                              | At least 24 by 24 CSS px, primary controls 44 by 44                              |
@@ -482,7 +481,7 @@ Beyond AA: `prefers-reduced-motion` and `forced-colors` are supported, and `lang
 ### 10.5 Performance
 
 - Horse movement uses `transform` driven by a `--progress` custom property; no layout reads per frame.
-- Self-hosted woff2 with `font-display: swap`, a preloaded display face and a metric-matched fallback.
+- Self-hosted woff2 with `font-display: swap`. A preloaded display face and a metric-matched fallback are added only if the Phase 5 Lighthouse run shows layout shift or slow text rendering.
 - Vite's Baseline Widely Available build target; no runtime dependencies beyond Vue, Pinia and the self-hosted font package.
 
 ### 10.6 Security and metadata
