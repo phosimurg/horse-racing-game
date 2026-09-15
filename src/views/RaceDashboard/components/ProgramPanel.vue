@@ -50,6 +50,8 @@ const { rounds, horsesById, states } = defineProps<{
 }
 
 .program-list {
+    /* Keeps the visually hidden table captions inside the scroll area. */
+    position: relative;
     display: grid;
     gap: var(--space-3);
     max-block-size: 36rem;

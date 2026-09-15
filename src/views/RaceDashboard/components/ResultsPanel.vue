@@ -101,6 +101,8 @@ watch(
 }
 
 .results-list {
+    /* Keeps the visually hidden table captions inside the scroll area. */
+    position: relative;
     display: grid;
     gap: var(--space-4);
     max-block-size: 36rem;
