@@ -258,6 +258,25 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
 
 - The Phase 5 review found no Critical or High issues. It flagged a CI baseline download that `gh run download` refuses over existing files, a remount test not traced to RACE-05, a smooth scroll on remount and missing requirement IDs in the HRG-60 row; all were fixed.
 
+## Phase 6: Documentation and delivery (2026-09-16)
+
+### Where the agent was wrong or incomplete, and how it was caught
+
+1. **The first Lighthouse numbers measured the host, not the app.**
+   - Issue: the live demo scored 94 on mobile and 70 on desktop for Performance, below the 95 that NFR-05 requires.
+   - Caught by: reading the failing audits instead of the score. `server-response-time` and `document-latency-insight` scored 0 for bytes that score 100 locally, and `uses-long-cache-ttl` reflects cache headers GitHub Pages sets.
+   - Resolution: the production build was measured again through `vite preview`, at 99 on mobile and 100 on desktop. Both runs are recorded in `docs/audits.md` with the hosting caveat.
+2. **One SEO audit cannot be fixed from this repository.**
+   - Issue: SEO scores 91 because `robots-txt` fails.
+   - Caught by: the same audit list.
+   - Resolution: Lighthouse fetches `robots.txt` from the origin root, which belongs to the account's root Pages site; a file shipped from here would land under `/horse-racing-game/`. Documented rather than worked around.
+
+### Phase review
+
+- The font preload that design section 10.5 left open was not added: the audits showed no layout shift and no slow text rendering.
+- The VoiceOver pass stays with the author, since a screen reader cannot be driven from this environment. `docs/audits.md` carries the script to follow.
+- The final security and code review (HRG-73) found no Critical or High issues. It confirmed that the Content Security Policy holds in the built app with no violations during a full race, that `resolveSeed` and the stored theme validate what they read, and that every workflow pins its actions and scopes its permissions. It flagged a README that told readers to run `npm run test:e2e` without installing the browsers, a policy test that asserted the header text but not that nothing was blocked, an unused `@vue/devtools-api` dependency, a `favicon.ico` unreachable from a project Pages path, and the brief quoted in the implementation plan. All were fixed; the author chose to drop the dependency and untrack the plan.
+
 ## Task log
 
 | Task                        | Delegated to the agent                                                                                                               | Kept by the author                                                                                              | Agent issue caught          | Rule added                                                               |
@@ -278,3 +297,4 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
 | HRG-53                      | Error handler, theme colors, SVG favicon and their tests in the main session                                                         | None                                                                                                            | None                        | None                                                                     |
 | HRG-40                      | Design system and dashboard built from design section 8, presented as seeded screenshots and a live race                             | The author asked for richer runners, then approved the design on 2026-09-15                                     | Phase 4 item 12             | None                                                                     |
 | HRG-60 and HRG-61           | Five visual states, baseline review, the remount diagnosis and fix, visual CI hardening and the update procedure in the main session | None                                                                                                            | Phase 5 items 1 and 2       | Missing baselines fail instead of being written (`playwright.config.ts`) |
+| HRG-70 to HRG-74            | README, case study answers, Lighthouse and keyboard audits, the final security review and the release checks in the main session     | The VoiceOver pass                                                                                              | Phase 6 items 1 and 2       | None                                                                     |

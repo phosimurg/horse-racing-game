@@ -8,7 +8,7 @@ Interactive horse racing game for the Insider One frontend assessment. Vue 3.5, 
 - Architecture, contracts, simulation and standards: `docs/specs/design.md`
 - Tasks and status (`HRG-<n>`): `docs/specs/tasks.md`
 - Decisions: `docs/adr/`
-- `docs/implementation-plan.md` is a historical record: do not load it for context or edit it.
+- `docs/implementation-plan.md` is an untracked local historical record: do not load it for context or edit it.
 
 ## Commands
 
