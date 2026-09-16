@@ -2,7 +2,9 @@
 
 An interactive horse racing game built with Vue 3, TypeScript and Pinia for the Insider One frontend assessment. Generate a program of six laps from 1200 to 2200 meters and watch ten of twenty horses race each lap.
 
-**[Live demo](https://phosimurg.github.io/horse-racing-game/)**
+[![CI](https://github.com/phosimurg/horse-racing-game/actions/workflows/ci.yml/badge.svg)](https://github.com/phosimurg/horse-racing-game/actions/workflows/ci.yml)
+
+**[Live demo](https://phosimurg.github.io/horse-racing-game/)**, which needs no setup.
 
 ## Features
 
@@ -14,9 +16,21 @@ An interactive horse racing game built with Vue 3, TypeScript and Pinia for the 
 - Dark and light themes, a layout that reflows to a single column with tabs below 768 pixels, and full keyboard access.
 - Deterministic races: add `?seed=20260915` to the URL to reproduce the same horses, program and results.
 
+## Screenshots
+
+| Desktop, dark theme                                                                                               | Phone, dark theme                                                                                             |
+| ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| ![A lap in progress on a desktop](e2e/visual/dashboard.spec.ts-snapshots/dashboard-desktop-dark-visual-linux.png) | ![A lap in progress on a phone](e2e/visual/dashboard.spec.ts-snapshots/dashboard-phone-dark-visual-linux.png) |
+
+Both images are visual regression baselines, so they always show what the tests assert.
+
 ## Quick start
 
-Requires Node.js `^22.22.2`, `^24.15.0` or `>=26.0.0` (see `.nvmrc`).
+Node.js `^22.22.2`, `^24.15.0` or `>=26.0.0` is required. The repository sets `engine-strict`, so an older Node stops `npm ci` with `npm error code EBADENGINE` instead of installing. `.nvmrc` pins the version used in CI:
+
+```bash
+nvm install && nvm use
+```
 
 ```bash
 npm ci
@@ -25,6 +39,8 @@ npm ci
 ```bash
 npm run dev
 ```
+
+The development server prints its URL, by default http://localhost:5173.
 
 ## Scripts
 
