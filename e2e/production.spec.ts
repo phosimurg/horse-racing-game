@@ -6,15 +6,31 @@ test.describe('[NFR-06] production security', () => {
     }) => {
         const origins = new Set<string>();
         page.on('request', (request) => origins.add(new URL(request.url()).origin));
+        // The policy text alone would still pass if it blocked the styles or the font.
+        await page.addInitScript(() => {
+            const store: string[] = [];
+            (window as unknown as { cspViolations: string[] }).cspViolations = store;
+            document.addEventListener('securitypolicyviolation', (event) => {
+                store.push(`${event.violatedDirective} ${event.blockedURI}`);
+            });
+        });
 
         await page.goto('/');
         await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+        await page.getByRole('button', { name: 'Generate Program' }).click();
+        await page.getByRole('button', { name: 'Start' }).click();
+        await expect(page.getByRole('button', { name: 'Pause' })).toBeVisible();
 
         await expect(page.locator('meta[http-equiv="Content-Security-Policy"]')).toHaveAttribute(
             'content',
             /default-src 'self'/
         );
         expect([...origins]).toEqual([new URL(page.url()).origin]);
+        expect(
+            await page.evaluate(
+                () => (window as unknown as { cspViolations: string[] }).cspViolations
+            )
+        ).toEqual([]);
     });
 });
 
@@ -22,7 +38,14 @@ test.describe('[NFR-06] production metadata', () => {
     test('declares the SVG icon and a theme color for each color scheme', async ({ page }) => {
         await page.goto('/');
 
-        await expect(page.locator('link[rel="icon"]')).toHaveAttribute('href', /favicon\.svg$/);
+        await expect(page.locator('link[rel="icon"]').first()).toHaveAttribute(
+            'href',
+            /favicon\.svg$/
+        );
+        await expect(page.locator('link[rel="icon"][sizes="32x32"]')).toHaveAttribute(
+            'href',
+            /favicon\.ico$/
+        );
         await expect(page.locator('meta[name="theme-color"]')).toHaveCount(2);
     });
 });
