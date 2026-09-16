@@ -12,4 +12,4 @@ paths:
 - Determinism: fixed seeds or a stubbed `Rng`, Vitest fake timers, and in Playwright `page.clock.install()` before `page.goto`, advancing with `runFor`. The installed clock keeps flowing in real time, so pause it with `page.clock.pauseAt()` after load when a test depends on exact progress, such as a screenshot.
 - Unit and component tests fail on `console.warn` and `console.error`. Silence one only while asserting the expected message.
 - Playwright: prefer `getByRole` and accessible names; use `data-testid` only when no accessible name exists. Tag cross-browser smoke tests with `@smoke`.
-- Visual baselines change only through `npm run test:visual:update`, which runs in Docker.
+- Visual baselines change only through `npm run test:visual:update`, which runs in Docker, or the CI `update-snapshots` run; the procedure is in `e2e/visual/README.md`.
