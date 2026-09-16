@@ -42,7 +42,7 @@ Every scrollable region is reachable, so keyboard users can scroll the roster, t
 
 ## Screen reader
 
-Pending: a VoiceOver pass is the author's, since it cannot be automated from this environment. Suggested script on the live demo:
+The author ran the VoiceOver pass on the live demo on 2026-09-16 and reported no issues. It cannot be automated from this environment, so it stays a manual step. The script followed:
 
 1. With VoiceOver on, load the page and confirm the heading level 1, then the landmarks (banner, main, the Horse list, Program and Results regions).
 2. Activate Generate Program and confirm the announcement "New program ready: 20 new horses, 6 laps from 1200 to 2200 meters."
