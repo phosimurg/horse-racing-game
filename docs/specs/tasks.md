@@ -96,10 +96,10 @@ Branch `test/visual-regression`.
 
 Branch `docs/delivery`.
 
-| ID     | Task                                        | Requirements   | Verification                 | Status |
-| ------ | ------------------------------------------- | -------------- | ---------------------------- | ------ |
-| HRG-70 | README                                      |                | Fresh-clone check            | [ ]    |
-| HRG-71 | Case study questions and answers            |                | `docs/case-study-qa.md`      | [ ]    |
-| HRG-72 | Lighthouse and VoiceOver audit              | NFR-01, NFR-05 | Recorded results             | [ ]    |
-| HRG-73 | Final code and security review              | All            | Findings fixed or documented | [ ]    |
-| HRG-74 | Release: Pages demo and repository settings | NFR-06         | Demo smoke test              | [ ]    |
+| ID     | Task                                        | Requirements   | Verification                                 | Status |
+| ------ | ------------------------------------------- | -------------- | -------------------------------------------- | ------ |
+| HRG-70 | README                                      |                | Fresh-clone check                            | [x]    |
+| HRG-71 | Case study questions and answers            |                | `docs/case-study-qa.md`                      | [x]    |
+| HRG-72 | Lighthouse and VoiceOver audit              | NFR-01, NFR-05 | [audits.md](../audits.md); VoiceOver pending | [ ]    |
+| HRG-73 | Final code and security review              | All            | Findings fixed or documented                 | [ ]    |
+| HRG-74 | Release: Pages demo and repository settings | NFR-06         | Demo smoke test                              | [ ]    |
