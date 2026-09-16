@@ -28,3 +28,6 @@ reports/
 # Claude Code local files
 .claude/settings.local.json
 CLAUDE.local.md
+
+# Kept locally: the plan quotes the assessment brief
+docs/implementation-plan.md
