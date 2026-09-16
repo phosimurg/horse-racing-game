@@ -275,6 +275,7 @@ Accepted as proposed: drop knip, reduce the ADRs from six to three, run mutation
 
 - The font preload that design section 10.5 left open was not added: the audits showed no layout shift and no slow text rendering.
 - The VoiceOver pass stays with the author, since a screen reader cannot be driven from this environment. `docs/audits.md` carries the script to follow.
+- The final security and code review (HRG-73) found no Critical or High issues. It confirmed that the Content Security Policy holds in the built app with no violations during a full race, that `resolveSeed` and the stored theme validate what they read, and that every workflow pins its actions and scopes its permissions. It flagged a README that told readers to run `npm run test:e2e` without installing the browsers, a policy test that asserted the header text but not that nothing was blocked, an unused `@vue/devtools-api` dependency, a `favicon.ico` unreachable from a project Pages path, and the brief quoted in the implementation plan. All were fixed; the author chose to drop the dependency and untrack the plan.
 
 ## Task log
 

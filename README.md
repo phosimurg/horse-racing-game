@@ -34,7 +34,7 @@ npm run dev
 | `npm run build`              | Type-check and build for production                                              |
 | `npm run verify`             | Lint, format check, type-check, unit tests with coverage, build and traceability |
 | `npm run test:unit`          | Unit and component tests with Vitest                                             |
-| `npm run test:e2e`           | End-to-end tests with Playwright                                                 |
+| `npm run test:e2e`           | End-to-end tests with Playwright (run `npx playwright install` once first)       |
 | `npm run test:visual:docker` | Visual regression tests inside the official Playwright image                     |
 | `npm run test:mutation`      | Mutation tests over `src/domain` with Stryker                                    |
 | `npm run traceability`       | Check that every requirement ID appears in a test title                          |

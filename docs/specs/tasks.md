@@ -6,16 +6,16 @@ Every task lands through the pull request of its phase, and its commits end with
 
 Branch `docs/spec`.
 
-| ID     | Task                                                                                   | Requirements | Verification                                        | Status |
-| ------ | -------------------------------------------------------------------------------------- | ------------ | --------------------------------------------------- | ------ |
-| HRG-01 | Scaffold with create-vue 3.23.0 and commit the output untouched                        | ADR 0003     | Baseline commit on `main`                           | [x]    |
-| HRG-02 | Commit the approved implementation plan                                                |              | [implementation-plan.md](../implementation-plan.md) | [x]    |
-| HRG-03 | Requirements specification: EARS criteria, glossary, lifecycle table, author decisions | All          | Owner approval                                      | [x]    |
-| HRG-04 | Design specification: architecture, contracts, simulation, UX, standards               | All          | Owner approval                                      | [x]    |
-| HRG-05 | Task breakdown                                                                         | All          | This file                                           | [x]    |
-| HRG-06 | ADRs 0001 to 0003                                                                      |              | Owner approval                                      | [x]    |
-| HRG-07 | AI workflow log: planning session                                                      |              | [ai-workflow.md](../ai-workflow.md)                 | [x]    |
-| HRG-08 | Create the public repository and push                                                  |              | Remote `main` and the Phase 0 pull request          | [x]    |
+| ID     | Task                                                                                   | Requirements | Verification                               | Status |
+| ------ | -------------------------------------------------------------------------------------- | ------------ | ------------------------------------------ | ------ |
+| HRG-01 | Scaffold with create-vue 3.23.0 and commit the output untouched                        | ADR 0003     | Baseline commit on `main`                  | [x]    |
+| HRG-02 | Commit the approved implementation plan                                                |              | Approved plan, kept locally                | [x]    |
+| HRG-03 | Requirements specification: EARS criteria, glossary, lifecycle table, author decisions | All          | Owner approval                             | [x]    |
+| HRG-04 | Design specification: architecture, contracts, simulation, UX, standards               | All          | Owner approval                             | [x]    |
+| HRG-05 | Task breakdown                                                                         | All          | This file                                  | [x]    |
+| HRG-06 | ADRs 0001 to 0003                                                                      |              | Owner approval                             | [x]    |
+| HRG-07 | AI workflow log: planning session                                                      |              | [ai-workflow.md](../ai-workflow.md)        | [x]    |
+| HRG-08 | Create the public repository and push                                                  |              | Remote `main` and the Phase 0 pull request | [x]    |
 
 ## Phase 1: Walking skeleton and guardrails
 
@@ -101,5 +101,5 @@ Branch `docs/delivery`.
 | HRG-70 | README                                      |                | Fresh-clone check                            | [x]    |
 | HRG-71 | Case study questions and answers            |                | `docs/case-study-qa.md`                      | [x]    |
 | HRG-72 | Lighthouse and VoiceOver audit              | NFR-01, NFR-05 | [audits.md](../audits.md); VoiceOver pending | [ ]    |
-| HRG-73 | Final code and security review              | All            | Findings fixed or documented                 | [ ]    |
+| HRG-73 | Final code and security review              | All            | Findings fixed; see ai-workflow.md           | [x]    |
 | HRG-74 | Release: Pages demo and repository settings | NFR-06         | Demo smoke test                              | [ ]    |
